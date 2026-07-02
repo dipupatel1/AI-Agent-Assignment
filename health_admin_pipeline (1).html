@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AI Agent Pipeline — Health Administration</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Georgia',serif;background:#F7F6F2;color:#1a1a1a;min-height:100vh;padding:16px 12px;}
+  .hdr{background:#1a1a1a;color:white;padding:12px 14px;margin:-16px -12px 18px;font-size:0.75rem;font-family:monospace;letter-spacing:0.04em;}
+  .hdr span{color:#a0f0a0;}
+  .tabs{display:flex;gap:7px;margin-bottom:18px;flex-wrap:wrap;}
+  .tab{padding:8px 14px;border:1.5px solid #E0DDD6;border-radius:5px;font-size:0.73rem;cursor:pointer;background:white;color:#888;font-family:'Georgia',serif;transition:all 0.2s;}
+  .tab.active{background:#1a1a1a;color:white;border-color:#1a1a1a;}
+  .panel{display:none;}.panel.active{display:block;}
+  .sc-label{font-size:0.6rem;font-family:monospace;text-transform:uppercase;letter-spacing:0.1em;color:#999;margin-bottom:4px;}
+  .sc-title{font-size:0.95rem;font-weight:normal;margin-bottom:2px;}
+  .sc-sub{font-size:0.68rem;color:#888;font-family:monospace;margin-bottom:14px;}
+  .sl{font-size:0.6rem;font-family:monospace;text-transform:uppercase;letter-spacing:0.08em;color:#999;margin-bottom:5px;margin-top:14px;}
+  .g5{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;}
+  .card{background:white;border:1.5px solid #E0DDD6;border-radius:6px;padding:8px 7px;font-size:0.63rem;}
+  .card.pass{border-color:#3a7d44;background:#f0faf1;}.card.fail{border-color:#c0392b;background:#fdf3f2;}
+  .card.hold{border-color:#d97706;background:#fffbeb;}.card.warn{border-color:#7c3aed;background:#faf5ff;}
+  .cn{font-weight:bold;font-size:0.7rem;margin-bottom:4px;}
+  .cf{color:#666;margin-bottom:2px;line-height:1.35;font-size:0.61rem;}
+  .badge{display:inline-block;margin-top:4px;padding:2px 5px;border-radius:3px;font-size:0.56rem;font-family:monospace;font-weight:bold;background:#eee;color:#888;}
+  .badge.high{background:#fee2e2;color:#c0392b;}.badge.medium{background:#fef9c3;color:#a16207;}
+  .badge.low{background:#dcfce7;color:#3a7d44;}.badge.critical{background:#4c0519;color:#fda4af;}
+  .badge.flagged{background:#fee2e2;color:#c0392b;}.badge.complete{background:#dcfce7;color:#3a7d44;}
+  .badge.review{background:#dbeafe;color:#1d4ed8;}.badge.warn2{background:#fef9c3;color:#a16207;}
+  .badge.urgent{background:#7f1d1d;color:#fca5a5;}
+  .pip{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:4px;}
+  .ag{background:white;border:1.5px solid #E0DDD6;border-radius:6px;padding:8px 6px;text-align:center;}
+  .ag.running{border-color:#2D6A9F;box-shadow:0 0 0 3px rgba(45,106,159,0.1);}.ag.done{border-color:#3a7d44;}
+  .ai{font-size:1.2rem;margin-bottom:2px;}.an{font-size:0.62rem;font-weight:bold;color:#333;margin-bottom:2px;}
+  .at{font-size:0.55rem;color:#888;font-family:monospace;}.as{margin-top:4px;font-size:0.55rem;font-family:monospace;color:#2D6A9F;min-height:11px;}
+  .run-btn{background:#1a1a1a;color:white;border:none;padding:9px 24px;font-size:0.78rem;font-family:'Georgia',serif;letter-spacing:0.05em;border-radius:4px;cursor:pointer;display:block;margin:12px auto;}
+  .run-btn:hover{background:#333;}.run-btn:disabled{background:#999;cursor:not-allowed;}
+  .audit{background:#1a1a1a;border-radius:6px;padding:12px;font-family:monospace;font-size:0.62rem;color:#a0f0a0;min-height:80px;max-height:200px;overflow-y:auto;line-height:1.6;}
+  .t{color:#666;}.la{color:#7dd3fc;}.lp{color:#86efac;}.lf{color:#fca5a5;}.lw{color:#fde68a;}.ls{color:#c084fc;}
+
+  @keyframes spin{to{transform:rotate(360deg);}}.spin{display:inline-block;animation:spin 0.7s linear infinite;}
+</style>
+</head>
+<body>
+<div class="hdr">Health Administration Course — AI Agent Pipeline Simulator — <span>AI Agent Pipeline Simulator</span> — Dr. Dipu Patel | ReasonFirst © 2026</div>
+<div class="tabs"><div class="tab" id="tab-staff" onclick="switchTab('staff')">👥 Workforce Optimization</div><div class="tab" id="tab-auth" onclick="switchTab('auth')">📄 Prior Authorization</div><div class="tab" id="tab-comp" onclick="switchTab('comp')">💬 Patient Complaints</div></div>
+
+<div class="panel" id="panel-staff">
+  <div class="sc-label">Health Administration — Scenario 1</div>
+  <div class="sc-title">Real-Time Staffing & Workforce Optimization</div>
+  <div class="sc-sub">Agents: Census-Tracker · Acuity-Scorer · Gap-Detector · Float-Pool-Router · Escalation-Trigger</div>
+  <div class="sl">Incoming Data</div>
+  <div class="g5" id="cases-staff"></div>
+  <div class="sl">Agent Pipeline</div>
+  <div class="pip"><div class="ag" id="ag-staff-0"><div class="ai">🏥</div><div class="an">Census-Tracker</div><div class="at">Real-time bed/volume data</div><div class="as" id="as-staff-0">waiting</div></div><div class="ag" id="ag-staff-1"><div class="ai">📊</div><div class="an">Acuity-Scorer</div><div class="at">Weights need by complexity</div><div class="as" id="as-staff-1">waiting</div></div><div class="ag" id="ag-staff-2"><div class="ai">🔴</div><div class="an">Gap-Detector</div><div class="at">Units below safe ratios</div><div class="as" id="as-staff-2">waiting</div></div><div class="ag" id="ag-staff-3"><div class="ai">🔄</div><div class="an">Float-Pool-Router</div><div class="at">Staff → highest-need unit</div><div class="as" id="as-staff-3">waiting</div></div><div class="ag" id="ag-staff-4"><div class="ai">🔔</div><div class="an">Escalation-Trigger</div><div class="at">Supervisor + agency alert</div><div class="as" id="as-staff-4">waiting</div></div></div>
+  <button class="run-btn" id="btn-staff" onclick="runPipeline('staff', SCENARIOS['staff'])">▶ Run Staffing Pipeline</button>
+  <div class="sl">Audit Trail</div>
+  <div class="audit" id="audit-staff"><span style="color:#444">// Click Run to begin.</span></div>
+  <div id="results-staff" style="display:none">
+    <div class="sl">Outcomes</div>
+    <div class="g5" id="res-grid-staff"></div>
+  </div>
+</div>
+<div class="panel" id="panel-auth">
+  <div class="sc-label">Health Administration — Scenario 2</div>
+  <div class="sc-title">Prior Authorization & Denial Management Pipeline</div>
+  <div class="sc-sub">Agents: Claim-Ingester · Policy-Matcher · Denial-Predictor · Appeal-Drafter · Escalation-Router</div>
+  <div class="sl">Incoming Data</div>
+  <div class="g5" id="cases-auth"></div>
+  <div class="sl">Agent Pipeline</div>
+  <div class="pip"><div class="ag" id="ag-auth-0"><div class="ai">📥</div><div class="an">Claim-Ingester</div><div class="at">Auth request + clinical docs</div><div class="as" id="as-auth-0">waiting</div></div><div class="ag" id="ag-auth-1"><div class="ai">📋</div><div class="an">Policy-Matcher</div><div class="at">Payer-specific criteria</div><div class="as" id="as-auth-1">waiting</div></div><div class="ag" id="ag-auth-2"><div class="ai">🎯</div><div class="an">Denial-Predictor</div><div class="at">Approval likelihood %</div><div class="as" id="as-auth-2">waiting</div></div><div class="ag" id="ag-auth-3"><div class="ai">✍️</div><div class="an">Appeal-Drafter</div><div class="at">Clinical justification letter</div><div class="as" id="as-auth-3">waiting</div></div><div class="ag" id="ag-auth-4"><div class="ai">📞</div><div class="an">Escalation-Router</div><div class="at">Peer-to-peer / urgent appeal</div><div class="as" id="as-auth-4">waiting</div></div></div>
+  <button class="run-btn" id="btn-auth" onclick="runPipeline('auth', SCENARIOS['auth'])">▶ Run Authorization Pipeline</button>
+  <div class="sl">Audit Trail</div>
+  <div class="audit" id="audit-auth"><span style="color:#444">// Click Run to begin.</span></div>
+  <div id="results-auth" style="display:none">
+    <div class="sl">Outcomes</div>
+    <div class="g5" id="res-grid-auth"></div>
+  </div>
+</div>
+<div class="panel" id="panel-comp">
+  <div class="sc-label">Health Administration — Scenario 3</div>
+  <div class="sc-title">Patient Complaint Triage & Service Recovery Pipeline</div>
+  <div class="sc-sub">Agents: Complaint-Ingester · Sentiment-Analyzer · Severity-Classifier · Response-Drafter · Recovery-Router</div>
+  <div class="sl">Incoming Data</div>
+  <div class="g5" id="cases-comp"></div>
+  <div class="sl">Agent Pipeline</div>
+  <div class="pip"><div class="ag" id="ag-comp-0"><div class="ai">📩</div><div class="an">Complaint-Ingester</div><div class="at">Channel + timestamp + dept</div><div class="as" id="as-comp-0">waiting</div></div><div class="ag" id="ag-comp-1"><div class="ai">🧠</div><div class="an">Sentiment-Analyzer</div><div class="at">Emotional intensity score</div><div class="as" id="as-comp-1">waiting</div></div><div class="ag" id="ag-comp-2"><div class="ai">🏷️</div><div class="an">Severity-Classifier</div><div class="at">Safety / Regulatory / Equity</div><div class="as" id="as-comp-2">waiting</div></div><div class="ag" id="ag-comp-3"><div class="ai">📝</div><div class="an">Response-Drafter</div><div class="at">Initial acknowledgment letter</div><div class="as" id="as-comp-3">waiting</div></div><div class="ag" id="ag-comp-4"><div class="ai">🔀</div><div class="an">Recovery-Router</div><div class="at">Dept + timeline + escalation</div><div class="as" id="as-comp-4">waiting</div></div></div>
+  <button class="run-btn" id="btn-comp" onclick="runPipeline('comp', SCENARIOS['comp'])">▶ Run Complaint Pipeline</button>
+  <div class="sl">Audit Trail</div>
+  <div class="audit" id="audit-comp"><span style="color:#444">// Click Run to begin.</span></div>
+  <div id="results-comp" style="display:none">
+    <div class="sl">Outcomes</div>
+    <div class="g5" id="res-grid-comp"></div>
+  </div>
+</div>
+<script>
+const SCENARIOS = {
+  "staff": {
+    agents: [{icon:"\ud83c\udfe5",name:"Census-Tracker",task:"Real-time bed/volume data",doneText:"\u2713 5 units loaded"},{icon:"\ud83d\udcca",name:"Acuity-Scorer",task:"Weights need by complexity",doneText:"\u2713 5 scored"},{icon:"\ud83d\udd34",name:"Gap-Detector",task:"Units below safe ratios",doneText:"\u2713 3 gaps found"},{icon:"\ud83d\udd04",name:"Float-Pool-Router",task:"Staff \u2192 highest-need unit",doneText:"\u2713 2 float assigned"},{icon:"\ud83d\udd14",name:"Escalation-Trigger",task:"Supervisor + agency alert",doneText:"\u2713 1 escalation"}],
+    cases: [{id:"MICU",ingestLine:"Medical ICU | Census 11/12 | 2 call-outs | Ratio 2.75:1 | 3 vented patients",displayFields:[{v:"Medical ICU",s:"font-weight:bold;color:#555"},{v:"Census: 11/12 (92%)"},{v:"Nurses on duty: 4 (2 call-outs)"},{v:"Current ratio: 2.75:1 (target 2:1)"},{v:"3 ventilated + 2 post-op patients"}]},
+{id:"MED-SURG",ingestLine:"Med-Surg 3W | Census 22/28 | 1 early departure | Ratio 4.4:1",displayFields:[{v:"Med-Surg 3 West",s:"font-weight:bold;color:#555"},{v:"Census: 22/28 (79%)"},{v:"Nurses on duty: 5 (1 leaving early)"},{v:"Current ratio: 4.4:1 (target 4:1)"},{v:"Acuity: Moderate"}]},
+{id:"ED",ingestLine:"Emergency Dept | Volume 140% capacity | 3.2hr wait | 2 nurses on concurrent lunch",displayFields:[{v:"Emergency Department",s:"font-weight:bold;color:#555"},{v:"Volume: 38 pts (140% capacity)"},{v:"Wait time: 3.2 hours"},{v:"2 nurses at lunch (concurrent)"},{v:"Acuity: Mixed, 4 ESI-2 waiting"}]},
+{id:"OR",ingestLine:"Operating Rooms | 8 cases | 2 delayed (equipment) | Teams idle then surge in 90min",displayFields:[{v:"Operating Rooms",s:"font-weight:bold;color:#555"},{v:"Cases scheduled: 8"},{v:"2 delayed (sterilization failure)"},{v:"2 OR teams currently idle"},{v:"Surge expected in ~90 minutes"}]},
+{id:"PEDS",ingestLine:"Pediatrics 2N | Census 8/16 | 4 nurses | Ratio 2:1 | Overstaffed vs census",displayFields:[{v:"Pediatrics 2 North",s:"font-weight:bold;color:#555"},{v:"Census: 8/16 (50%)"},{v:"Nurses on duty: 4"},{v:"Current ratio: 2:1 (target 3:1 at this census)"},{v:"Acuity: Low, no callouts"}]}],
+    results: [{id:"MICU",cardClass:"fail",badgeText:"CRITICAL \u2014 Float NOW",badgeClass:"high",a1cls:"lf",a1line:"MICU: Acuity Score 92/100 \u2014 3 vented patients at 2.75:1 ratio exceeds safe threshold by 38%.",a2cls:"lf",a2line:"MICU: CRITICAL GAP \u2014 Ratio 2.75:1 vs 2:1 target with high-acuity patients. Patient safety risk.",a3line:"MICU: Float Pool \u2192 Send 1 ICU-trained RN immediately from Pediatrics. Ratio improves to 2.2:1.",a4cls:"lf",a4line:"MICU \u2192 ESCALATION: Nursing Supervisor alerted. 1 ICU-trained RN from Peds assigned immediately. Agency backup on standby.",resultFields:[{v:"Acuity: 92/100 \u2014 CRITICAL",s:"color:#c0392b;font-weight:bold"},{v:"Gap: Ratio 2.75:1 vs 2:1"},{v:"Action: Float RN from Peds NOW"},{v:"Alert: Supervisor notified"}]},
+{id:"MED-SURG",cardClass:"hold",badgeText:"MODERATE \u2014 Standby",badgeClass:"medium",a1cls:"lw",a1line:"MED-SURG: Acuity Score 52/100 \u2014 moderate census, approaching ratio threshold with planned early departure.",a2cls:"lw",a2line:"MED-SURG: MODERATE GAP \u2014 Ratio will breach 4:1 threshold when nurse departs at 3pm. Preemptive action needed.",a3line:"MED-SURG: Float Pool \u2192 1 RN on standby for 3pm. Charge nurse notified to monitor.",a4cls:"lw",a4line:"MED-SURG \u2192 Charge Nurse alert. 1 float RN on standby from 2:45pm. Reassess at 3pm.",resultFields:[{v:"Acuity: 52/100 \u2014 Moderate",s:"color:#a16207;font-weight:bold"},{v:"Gap: Projected at 3pm departure"},{v:"Action: Float RN on standby 2:45pm"},{v:"Alert: Charge nurse notified"}]},
+{id:"ED",cardClass:"fail",badgeText:"CRITICAL \u2014 Surge",badgeClass:"high",a1cls:"lf",a1line:"ED: Acuity Score 88/100 \u2014 140% volume, 4 ESI-2 patients waiting, concurrent lunch breaks creating coverage gap.",a2cls:"lf",a2line:"ED: CRITICAL \u2014 Concurrent nurse lunch breaks at 140% volume creates patient safety risk. 4 high-acuity patients without adequate RN coverage.",a3line:"ED: Float Pool \u2192 Stagger lunch breaks immediately. 1 nurse returns from lunch early. Charge nurse assumes floor coverage.",a4cls:"lf",a4line:"ED \u2192 Charge Nurse alert: stagger breaks NOW. Consider diversion assessment if volume continues.",resultFields:[{v:"Acuity: 88/100 \u2014 CRITICAL",s:"color:#c0392b;font-weight:bold"},{v:"Gap: Concurrent breaks at surge"},{v:"Action: Stagger breaks immediately"},{v:"Alert: Charge nurse + diversion assess"}]},
+{id:"OR",cardClass:"hold",badgeText:"WATCH \u2014 60min Alert",badgeClass:"medium",a1cls:"lw",a1line:"OR: Acuity Score 35/100 \u2014 2 teams currently idle due to equipment delay. Surge in ~90 minutes when delayed cases begin.",a2cls:"lw",a2line:"OR: WATCH \u2014 No current gap, but idle-to-surge transition in 90 minutes requires preparation. Equipment delay may extend.",a3line:"OR: No float action now. Set 60-minute alert. Confirm sterilization ETA. Brief OR teams on case sequence.",a4cls:"lw",a4line:"OR \u2192 60-minute automated alert set. OR Coordinator briefed. Equipment sterilization ETA confirmed.",resultFields:[{v:"Acuity: 35/100 \u2014 Watch",s:"color:#a16207;font-weight:bold"},{v:"Gap: Projected in 90 minutes"},{v:"Action: 60min alert + brief teams"},{v:"Alert: OR Coordinator notified"}]},
+{id:"PEDS",cardClass:"pass",badgeText:"OVERSTAFFED \u2014 Float Out",badgeClass:"low",a1cls:"lp",a1line:"PEDS: Acuity Score 18/100 \u2014 Census 50%, low acuity, currently overstaffed relative to patient load.",a2cls:"lp",a2line:"PEDS: OVERSTAFFED \u2014 4 nurses for 8 patients (2:1) exceeds need. Target ratio at this census is 3:1.",a3line:"PEDS: Float Pool \u2192 Release 1 ICU-trained RN to cover MICU. Remaining 3 nurses maintain safe coverage.",a4cls:"lp",a4line:"PEDS \u2192 1 ICU-trained RN released to float pool. 3 nurses remain. Ratio improves to 2.67:1 \u2014 within target.",resultFields:[{v:"Acuity: 18/100 \u2014 Low",s:"color:#3a7d44;font-weight:bold"},{v:"Status: Overstaffed vs. census"},{v:"Action: Release 1 RN to MICU float"},{v:"Remaining: 3 nurses, ratio 2.67:1"}]}]
+  },
+  "auth": {
+    agents: [{icon:"\ud83d\udce5",name:"Claim-Ingester",task:"Auth request + clinical docs",doneText:"\u2713 5 requests loaded"},{icon:"\ud83d\udccb",name:"Policy-Matcher",task:"Payer-specific criteria",doneText:"\u2713 5 matched"},{icon:"\ud83c\udfaf",name:"Denial-Predictor",task:"Approval likelihood %",doneText:"\u2713 5 scored"},{icon:"\u270d\ufe0f",name:"Appeal-Drafter",task:"Clinical justification letter",doneText:"\u2713 4 letters drafted"},{icon:"\ud83d\udcde",name:"Escalation-Router",task:"Peer-to-peer / urgent appeal",doneText:"\u2713 2 escalations"}],
+    cases: [{id:"AUTH-001",ingestLine:"MRI lumbar spine | James B. 54M | Chronic back pain | PT x4wks documented | Neuro symptoms",displayFields:[{v:"James B., 54M"},{v:"Request: MRI Lumbar Spine"},{v:"Dx: Chronic back pain 6 weeks"},{v:"Conservative tx: PT x4 weeks documented"},{v:"New: Numbness left leg (neurological)"}]},
+{id:"AUTH-002",ingestLine:"Adalimumab (Humira) | Sofia R. 38F | RA | MTX failed | Step therapy incomplete (1/2 biologics)",displayFields:[{v:"Sofia R., 38F"},{v:"Request: Adalimumab (Humira)"},{v:"Dx: Rheumatoid Arthritis, 18 months"},{v:"MTX failure documented"},{v:"Step therapy: 1/2 biologics tried (etanercept failed)"}]},
+{id:"AUTH-003",ingestLine:"Inpatient rehab | Eleanor P. 72F | Post-fall hip fracture | 24hr nursing care required",displayFields:[{v:"Eleanor P., 72F"},{v:"Request: Inpatient Rehabilitation"},{v:"Dx: Post-fall hip fracture"},{v:"Acute hospitalization: Complete"},{v:"Functional assessment: Requires 24hr nursing care"}]},
+{id:"AUTH-004",ingestLine:"Semaglutide (Ozempic) | Thomas K. 49M | T2DM A1c 8.1% | Metformin + SGLT2 failed | On formulary",displayFields:[{v:"Thomas K., 49M"},{v:"Request: Semaglutide (Ozempic)"},{v:"Dx: T2DM, A1c 8.1%, BMI 31"},{v:"Prior tx: Metformin + SGLT2 failure documented"},{v:"Formulary status: On formulary, PA required"}]},
+{id:"AUTH-005",ingestLine:"Home health aide daily | Margaret W. 81F | Post hip replacement day 5 | PT note MISSING",displayFields:[{v:"Margaret W., 81F"},{v:"Request: Home Health Aide (daily)"},{v:"Dx: Post hip replacement, Day 5"},{v:"Functional assessment: Submitted"},{v:"\u26a0 PT note: MISSING from packet"}]}],
+    results: [{id:"AUTH-001",cardClass:"pass",badgeText:"72% Approval \u2014 Submit",badgeClass:"complete",a1cls:"lp",a1line:"AUTH-001: Policy match \u2014 Conservative tx (PT x4wks) documented. Neurological symptoms (leg numbness) meet radiculopathy criteria.",a2cls:"lp",a2line:"AUTH-001: APPROVAL LIKELY (72%) \u2014 Conservative treatment documented + new neurological symptom meets payer MRI criteria.",a3line:"AUTH-001: Appeal letter drafted. Key argument: new L-leg numbness post PT failure = radiculopathy criterion met.",a4cls:"lp",a4line:"AUTH-001 \u2192 Standard submission | Clinical letter attached. Expected turnaround: 3-5 business days.",resultFields:[{v:"Approval likelihood: 72%",s:"color:#3a7d44;font-weight:bold"},{v:"Key: Neuro symptoms + PT failure"},{v:"Action: Submit standard"},{v:"Timeline: 3-5 business days"}]},
+{id:"AUTH-002",cardClass:"fail",badgeText:"78% Denial \u2014 Peer-to-Peer",badgeClass:"flagged",a1cls:"lf",a1line:"AUTH-002: Policy match FAIL \u2014 Payer requires 2 biologic failures for adalimumab. Only 1 documented (etanercept).",a2cls:"lf",a2line:"AUTH-002: DENIAL LIKELY (78%) \u2014 Step therapy incomplete. Options: complete step therapy OR request medical necessity exception.",a3line:"AUTH-002: Appeal drafted for medical necessity exception. Argument: patient's disease severity + etanercept failure warrants exception.",a4cls:"lf",a4line:"AUTH-002 \u2192 PEER-TO-PEER REVIEW | Rheumatologist call with payer medical director recommended before submission.",resultFields:[{v:"Denial likelihood: 78%",s:"color:#c0392b;font-weight:bold"},{v:"Issue: Step therapy incomplete"},{v:"Action: Peer-to-peer call first"},{v:"Alt: Complete step therapy"}]},
+{id:"AUTH-003",cardClass:"pass",badgeText:"85% Approval \u2014 Submit",badgeClass:"complete",a1cls:"lp",a1line:"AUTH-003: Policy match \u2014 Functional assessment clearly documents 24hr nursing care requirement post hip fracture.",a2cls:"lp",a2line:"AUTH-003: APPROVAL LIKELY (85%) \u2014 Post-acute rehab criteria met: acute hospitalization complete, functional limitation documented.",a3line:"AUTH-003: Standard submission. Functional assessment + acute note attached. No additional appeal letter needed.",a4cls:"lp",a4line:"AUTH-003 \u2192 Standard submission | Functional assessment attached. Expected turnaround: 1-2 business days (urgent).",resultFields:[{v:"Approval likelihood: 85%",s:"color:#3a7d44;font-weight:bold"},{v:"Key: Functional assessment complete"},{v:"Action: Submit standard"},{v:"Timeline: 1-2 days (urgent)"}]},
+{id:"AUTH-004",cardClass:"hold",badgeText:"55% \u2014 Submit with Docs",badgeClass:"medium",a1cls:"lw",a1line:"AUTH-004: Policy match \u2014 On formulary, but prior auth required for GLP-1 class. Prior tx failure documentation is key.",a2cls:"lw",a2line:"AUTH-004: UNCERTAIN (55%) \u2014 Formulary status helps but payer PA criteria require explicit step therapy documentation.",a3line:"AUTH-004: Appeal letter drafted. Include: A1c 8.1%, metformin failure dates, SGLT2 failure dates, BMI. Make step therapy timeline explicit.",a4cls:"lw",a4line:"AUTH-004 \u2192 Submit with complete step therapy timeline | Response varies by payer. Expect 5-7 days.",resultFields:[{v:"Approval likelihood: 55%",s:"color:#a16207;font-weight:bold"},{v:"Key: Step therapy timeline needed"},{v:"Action: Submit with full docs"},{v:"Timeline: 5-7 days"}]},
+{id:"AUTH-005",cardClass:"fail",badgeText:"DO NOT SUBMIT \u2014 Missing PT Note",badgeClass:"flagged",a1cls:"lf",a1line:"AUTH-005: Documentation INCOMPLETE \u2014 PT note missing from packet. Home health criteria require PT functional assessment.",a2cls:"lf",a2line:"AUTH-005: DENIAL RISK (65%) IF SUBMITTED \u2014 Missing PT note is automatic denial trigger for home health aide requests.",a3line:"AUTH-005: DO NOT SUBMIT. Obtain PT note first. Once received, resubmit within 24hrs given patient's post-op status.",a4cls:"lf",a4line:"AUTH-005 \u2192 HOLD: Contact PT for urgent note completion | Resubmit within 24hrs of receipt. Patient at Day 5 post-op \u2014 time sensitive.",resultFields:[{v:"Denial risk: 65% if submitted",s:"color:#c0392b;font-weight:bold"},{v:"Issue: PT note MISSING"},{v:"Action: DO NOT SUBMIT \u2014 get PT note first"},{v:"Timeline: Resubmit within 24hrs of receipt"}]}]
+  },
+  "comp": {
+    agents: [{icon:"\ud83d\udce9",name:"Complaint-Ingester",task:"Channel + timestamp + dept",doneText:"\u2713 5 complaints loaded"},{icon:"\ud83e\udde0",name:"Sentiment-Analyzer",task:"Emotional intensity score",doneText:"\u2713 5 analyzed"},{icon:"\ud83c\udff7\ufe0f",name:"Severity-Classifier",task:"Safety / Regulatory / Equity",doneText:"\u2713 5 classified"},{icon:"\ud83d\udcdd",name:"Response-Drafter",task:"Initial acknowledgment letter",doneText:"\u2713 5 drafted"},{icon:"\ud83d\udd00",name:"Recovery-Router",task:"Dept + timeline + escalation",doneText:"\u2713 2 urgent routed"}],
+    cases: [{id:"COMP-001",ingestLine:"Call light ignored 45min | Med-Surg post-op day 2 | Pain management | Patient portal",displayFields:[{v:"Channel: Patient Portal",s:"font-weight:bold;color:#555"},{v:"Department: Med-Surg"},{v:"Issue: Call light ignored 45 minutes"},{v:"\"I was in pain and nobody came.\""},{v:"Timing: Post-op Day 2"}]},
+{id:"COMP-002",ingestLine:"Oncologist gave cancer diagnosis in 2 minutes, walked out | Patient advocate | Oncology",displayFields:[{v:"Channel: Patient Advocate",s:"font-weight:bold;color:#555"},{v:"Department: Oncology"},{v:"Issue: Insufficient diagnosis communication"},{v:"\"I had to Google my diagnosis.\""},{v:"Had to self-research after visit"}]},
+{id:"COMP-003",ingestLine:"Billed $4,200 for procedure told was covered | Letter | Billing dispute",displayFields:[{v:"Channel: Written Letter",s:"font-weight:bold;color:#555"},{v:"Department: Billing / Revenue Cycle"},{v:"Issue: Unexpected bill $4,200"},{v:"\"I was told it would be fully covered.\""},{v:"No prior cost notification"}]},
+{id:"COMP-004",ingestLine:"Cold meal, wrong dietary restriction, no substitute offered | HCAHPS call | Dietary",displayFields:[{v:"Channel: HCAHPS Follow-up Call",s:"font-weight:bold;color:#555"},{v:"Department: Dietary Services"},{v:"Issue: Cold meal, dairy not removed"},{v:"No apology or substitute offered"},{v:"Dietary restriction on file"}]},
+{id:"COMP-005",ingestLine:"Pain not taken seriously due to race | Patient advocate | ED | Equity complaint",displayFields:[{v:"Channel: Patient Advocate",s:"font-weight:bold;color:#555"},{v:"Department: Emergency Department"},{v:"Issue: Racial bias in pain management"},{v:"\"A white patient got treated faster and given stronger medication.\""},{v:"Potential discrimination allegation"}]}],
+    results: [{id:"COMP-001",cardClass:"hold",badgeText:"SERVICE/SAFETY \u2014 48hr",badgeClass:"review",a1cls:"lw",a1line:"COMP-001: Sentiment 8/10 \u2014 High distress. Pain management failure with 45-minute call light response time.",a2cls:"lw",a2line:"COMP-001: SEVERITY \u2014 Service + Potential Safety. Unmanaged post-op pain has clinical consequences. HCAHPS domain impact.",a3line:"COMP-001: Response drafted \u2014 acknowledgment + apology + statement that a review will be conducted.",a4cls:"lw",a4line:"COMP-001 \u2192 Nurse Manager + Unit Director | 48-hour response required. HCAHPS flag. Review call response times.",resultFields:[{v:"Sentiment: 8/10 \u2014 High",s:"font-weight:bold"},{v:"Type: Service + Safety"},{v:"Route: Nurse Manager + Unit Director"},{v:"Timeline: 48 hours | HCAHPS flag"}]},
+{id:"COMP-002",cardClass:"fail",badgeText:"REGULATORY \u2014 24hr",badgeClass:"flagged",a1cls:"lf",a1line:"COMP-002: Sentiment 9/10 \u2014 High distress. Patient received cancer diagnosis without adequate explanation or support.",a2cls:"lf",a2line:"COMP-002: SEVERITY \u2014 REGULATORY. Inadequate informed consent / diagnosis communication may violate patient rights standards (Joint Commission EP.6).",a3line:"COMP-002: Response drafted \u2014 acknowledgment, apology, offer of patient navigator and follow-up appointment.",a4cls:"lf",a4line:"COMP-002 \u2192 Department Chief + Patient Relations | 24-hour response. Joint Commission standard flag. CMO notification.",resultFields:[{v:"Sentiment: 9/10 \u2014 High",s:"font-weight:bold"},{v:"Type: REGULATORY (JC standard)"},{v:"Route: Dept Chief + Patient Relations + CMO"},{v:"Timeline: 24 hours"}]},
+{id:"COMP-003",cardClass:"hold",badgeText:"BILLING \u2014 72hr",badgeClass:"medium",a1cls:"lw",a1line:"COMP-003: Sentiment 7/10 \u2014 Moderate-high. Financial harm with prior verbal assurance creates breach of trust + potential liability.",a2cls:"lw",a2line:"COMP-003: SEVERITY \u2014 Billing / Financial harm. Verbal coverage assurance (if documented) creates hospital liability. Potential waiver case.",a3line:"COMP-003: Response drafted \u2014 acknowledgment, billing review commitment, no admission of liability.",a4cls:"lw",a4line:"COMP-003 \u2192 Revenue Cycle Director + Financial Counselor | 72-hour response. Pull all patient communication records. Waiver review if verbal assurance documented.",resultFields:[{v:"Sentiment: 7/10 \u2014 Moderate-High",s:"font-weight:bold"},{v:"Type: Billing / Financial harm"},{v:"Route: Revenue Cycle + Financial Counselor"},{v:"Timeline: 72 hours | Liability review"}]},
+{id:"COMP-004",cardClass:"pass",badgeText:"SERVICE \u2014 5 business days",badgeClass:"complete",a1cls:"lp",a1line:"COMP-004: Sentiment 4/10 \u2014 Moderate. Service failure in dietary, documented restriction on file.",a2cls:"lp",a2line:"COMP-004: SEVERITY \u2014 Service (dietary). No clinical harm, no regulatory exposure. Standard service recovery.",a3line:"COMP-004: Response drafted \u2014 apology, acknowledgment of restriction documentation failure, process improvement commitment.",a4cls:"lp",a4line:"COMP-004 \u2192 Food Services Manager | 5 business days response. Standard service recovery. HCAHPS dietary domain.",resultFields:[{v:"Sentiment: 4/10 \u2014 Moderate",s:"font-weight:bold"},{v:"Type: Service \u2014 dietary"},{v:"Route: Food Services Manager"},{v:"Timeline: 5 business days"}]},
+{id:"COMP-005",cardClass:"fail",badgeText:"EQUITY/LEGAL \u2014 24hr",badgeClass:"flagged",a1cls:"lf",a1line:"COMP-005: Sentiment 10/10 \u2014 CRITICAL. Racial discrimination allegation in pain management with specific comparative claim.",a2cls:"lf",a2line:"COMP-005: SEVERITY \u2014 EQUITY + REGULATORY + LEGAL. Racial bias in clinical care is a Title VI violation if substantiated. Requires immediate escalation.",a3line:"COMP-005: Response drafted \u2014 acknowledgment, statement of zero tolerance for discrimination, offer of immediate follow-up with Chief Equity Officer.",a4cls:"lf",a4line:"COMP-005 \u2192 Chief Equity Officer + Risk Management + Patient Relations | 24-hour response. Legal review required. Preserve all records from that ED visit.",resultFields:[{v:"Sentiment: 10/10 \u2014 CRITICAL",s:"font-weight:bold;color:#c0392b"},{v:"Type: EQUITY + LEGAL (Title VI)"},{v:"Route: Chief Equity Officer + Risk Mgmt"},{v:"Timeline: 24 hours | Preserve all records"}]}]
+  },
+};
+
+
+function switchTab(panelId){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+panelId).classList.add('active');
+  document.getElementById('panel-'+panelId).classList.add('active');
+}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+function setAg(pid,idx,state,text){
+  document.getElementById('ag-'+pid+'-'+idx).className='ag '+state;
+  document.getElementById('as-'+pid+'-'+idx).innerHTML=text;
+}
+function logLine(pid,cls,txt){
+  const el=document.getElementById('audit-'+pid);
+  const t=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const d=document.createElement('div');
+  d.innerHTML='<span class="t">['+t+']</span> <span class="'+cls+'">'+txt+'</span>';
+  if(el.querySelector('span[style]'))el.innerHTML='';
+  el.appendChild(d);el.scrollTop=el.scrollHeight;
+}
+async function runPipeline(pid, SCENARIO){
+  document.getElementById('btn-'+pid).disabled=true;
+  document.getElementById('results-'+pid).style.display='none';
+  document.getElementById('audit-'+pid).innerHTML='';
+  renderCases(pid, SCENARIO.cases, null);
+  for(let i=0;i<5;i++) setAg(pid,i,'','waiting');
+
+  // Agent 0 — instant (no AI needed)
+  setAg(pid,0,'running','<span class="spin">⟳</span> processing...');
+  await sleep(350);
+  logLine(pid,'ls','══ '+SCENARIO.agents[0].name.toUpperCase()+' ══');
+  for(const c of SCENARIO.cases){
+    logLine(pid,'la','['+SCENARIO.agents[0].name+'] '+c.ingestLine);
+    await sleep(90);
+  }
+  setAg(pid,0,'done','✓ 5 ingested');
+
+  // Agents 1-4 — batch
+  await sleep(250);
+  for(let i=1;i<5;i++) setAg(pid,i,'running','<span class="spin">⟳</span>...');
+  logLine(pid,'ls','══ AI ANALYSIS — BATCH ══');
+  logLine(pid,'la','[System] Processing through '+SCENARIO.agents.slice(1).map(a=>a.name).join(' + ')+'...');
+  await sleep(800);
+
+  const results = SCENARIO.results;
+
+  // Agent 1 audit
+  logLine(pid,'ls','══ '+SCENARIO.agents[1].name.toUpperCase()+' ══');
+  for(let i=0;i<results.length;i++){
+    logLine(pid, results[i].a1cls, '['+SCENARIO.agents[1].name+'] '+results[i].a1line);
+    await sleep(90);
+  }
+  setAg(pid,1,'done',SCENARIO.agents[1].doneText);
+
+  // Agent 2 audit
+  await sleep(120);
+  logLine(pid,'ls','══ '+SCENARIO.agents[2].name.toUpperCase()+' ══');
+  for(let i=0;i<results.length;i++){
+    logLine(pid, results[i].a2cls, '['+SCENARIO.agents[2].name+'] '+results[i].a2line);
+    await sleep(90);
+  }
+  setAg(pid,2,'done',SCENARIO.agents[2].doneText);
+
+  // Agent 3 audit
+  await sleep(120);
+  logLine(pid,'ls','══ '+SCENARIO.agents[3].name.toUpperCase()+' ══');
+  for(let i=0;i<results.length;i++){
+    logLine(pid,'la','['+SCENARIO.agents[3].name+'] '+results[i].a3line);
+    await sleep(90);
+  }
+  setAg(pid,3,'done',SCENARIO.agents[3].doneText);
+
+  // Agent 4 audit
+  await sleep(120);
+  logLine(pid,'ls','══ '+SCENARIO.agents[4].name.toUpperCase()+' ══');
+  for(let i=0;i<results.length;i++){
+    logLine(pid, results[i].a4cls, '['+SCENARIO.agents[4].name+'] '+results[i].a4line);
+    await sleep(90);
+  }
+  setAg(pid,4,'done',SCENARIO.agents[4].doneText);
+
+  renderCases(pid, SCENARIO.cases, results);
+  renderResults(pid, SCENARIO, results);
+
+  document.getElementById('btn-'+pid).disabled=false;
+  document.getElementById('btn-'+pid).textContent='↺ Run Again';
+}
+
+function renderCases(pid, cases, results){
+  document.getElementById('cases-'+pid).innerHTML = cases.map((c,i)=>{
+    const r = results ? results[i] : null;
+    const cc = r ? r.cardClass : '';
+    const bt = r ? r.badgeText : 'PENDING';
+    const bc = r ? r.badgeClass : '';
+    return '<div class="card '+cc+'"><div class="cn">'+c.id+'</div>'
+      + c.displayFields.map(f=>'<div class="cf"'+(f.s?' style="'+f.s+'"':'')+'>'+f.v+'</div>').join('')
+      + '<span class="badge '+bc+'">'+bt+'</span></div>';
+  }).join('');
+}
+
+function renderResults(pid, SCENARIO, results){
+  document.getElementById('res-grid-'+pid).innerHTML = results.map(r=>
+    '<div class="card '+r.cardClass+'"><div class="cn">'+r.id+'</div>'
+    + r.resultFields.map(f=>'<div class="cf"'+(f.s?' style="'+f.s+'"':'')+'>'+f.v+'</div>').join('')
+    + '</div>'
+  ).join('');
+  document.getElementById('results-'+pid).style.display='block';
+  document.getElementById('results-'+pid).scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// Activate first tab
+document.getElementById('tab-staff').classList.add('active');
+document.getElementById('panel-staff').classList.add('active');
+// Init all case grids
+Object.keys(SCENARIOS).forEach(pid => renderCases(pid, SCENARIOS[pid].cases, null));
+</script>
+</body>
+</html>

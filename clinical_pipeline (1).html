@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AI Agent Pipeline — Clinical</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Georgia',serif;background:#F7F6F2;color:#1a1a1a;min-height:100vh;padding:16px 12px;}
+  .hdr{background:#1a1a1a;color:white;padding:12px 14px;margin:-16px -12px 18px;font-size:0.75rem;font-family:monospace;letter-spacing:0.04em;}
+  .hdr span{color:#a0f0a0;}
+  .tabs{display:flex;gap:7px;margin-bottom:18px;flex-wrap:wrap;}
+  .tab{padding:8px 14px;border:1.5px solid #E0DDD6;border-radius:5px;font-size:0.73rem;cursor:pointer;background:white;color:#888;font-family:'Georgia',serif;transition:all 0.2s;}
+  .tab.active{background:#1a1a1a;color:white;border-color:#1a1a1a;}
+  .panel{display:none;}.panel.active{display:block;}
+  .sc-label{font-size:0.6rem;font-family:monospace;text-transform:uppercase;letter-spacing:0.1em;color:#999;margin-bottom:4px;}
+  .sc-title{font-size:0.95rem;font-weight:normal;margin-bottom:2px;}
+  .sc-sub{font-size:0.68rem;color:#888;font-family:monospace;margin-bottom:14px;}
+  .sl{font-size:0.6rem;font-family:monospace;text-transform:uppercase;letter-spacing:0.08em;color:#999;margin-bottom:5px;margin-top:14px;}
+  .g5{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;}
+  .card{background:white;border:1.5px solid #E0DDD6;border-radius:6px;padding:8px 7px;font-size:0.63rem;}
+  .card.pass{border-color:#3a7d44;background:#f0faf1;}.card.fail{border-color:#c0392b;background:#fdf3f2;}
+  .card.hold{border-color:#d97706;background:#fffbeb;}.card.warn{border-color:#7c3aed;background:#faf5ff;}
+  .cn{font-weight:bold;font-size:0.7rem;margin-bottom:4px;}
+  .cf{color:#666;margin-bottom:2px;line-height:1.35;font-size:0.61rem;}
+  .badge{display:inline-block;margin-top:4px;padding:2px 5px;border-radius:3px;font-size:0.56rem;font-family:monospace;font-weight:bold;background:#eee;color:#888;}
+  .badge.high{background:#fee2e2;color:#c0392b;}.badge.medium{background:#fef9c3;color:#a16207;}
+  .badge.low{background:#dcfce7;color:#3a7d44;}.badge.critical{background:#4c0519;color:#fda4af;}
+  .badge.flagged{background:#fee2e2;color:#c0392b;}.badge.complete{background:#dcfce7;color:#3a7d44;}
+  .badge.review{background:#dbeafe;color:#1d4ed8;}.badge.warn2{background:#fef9c3;color:#a16207;}
+  .badge.urgent{background:#7f1d1d;color:#fca5a5;}
+  .pip{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:4px;}
+  .ag{background:white;border:1.5px solid #E0DDD6;border-radius:6px;padding:8px 6px;text-align:center;}
+  .ag.running{border-color:#2D6A9F;box-shadow:0 0 0 3px rgba(45,106,159,0.1);}.ag.done{border-color:#3a7d44;}
+  .ai{font-size:1.2rem;margin-bottom:2px;}.an{font-size:0.62rem;font-weight:bold;color:#333;margin-bottom:2px;}
+  .at{font-size:0.55rem;color:#888;font-family:monospace;}.as{margin-top:4px;font-size:0.55rem;font-family:monospace;color:#2D6A9F;min-height:11px;}
+  .run-btn{background:#1a1a1a;color:white;border:none;padding:9px 24px;font-size:0.78rem;font-family:'Georgia',serif;letter-spacing:0.05em;border-radius:4px;cursor:pointer;display:block;margin:12px auto;}
+  .run-btn:hover{background:#333;}.run-btn:disabled{background:#999;cursor:not-allowed;}
+  .audit{background:#1a1a1a;border-radius:6px;padding:12px;font-family:monospace;font-size:0.62rem;color:#a0f0a0;min-height:80px;max-height:200px;overflow-y:auto;line-height:1.6;}
+  .t{color:#666;}.la{color:#7dd3fc;}.lp{color:#86efac;}.lf{color:#fca5a5;}.lw{color:#fde68a;}.ls{color:#c084fc;}
+
+  @keyframes spin{to{transform:rotate(360deg);}}.spin{display:inline-block;animation:spin 0.7s linear infinite;}
+</style>
+</head>
+<body>
+<div class="hdr">Clinical Digital Health Course — AI Agent Pipeline Simulator — <span>AI Agent Pipeline Simulator</span> — Dr. Dipu Patel | ReasonFirst © 2026</div>
+<div class="tabs"><div class="tab" id="tab-scribe" onclick="switchTab('scribe')">📋 Clinical Scribe</div><div class="tab" id="tab-ed" onclick="switchTab('ed')">🚨 ED Triage</div><div class="tab" id="tab-dm" onclick="switchTab('dm')">🩺 Diabetes Care Gap</div></div>
+
+<div class="panel" id="panel-scribe">
+  <div class="sc-label">Digital Health — Scenario 1</div>
+  <div class="sc-title">Clinical Documentation & AI Scribe Workflow</div>
+  <div class="sc-sub">Agents: Transcriber · Note-Structurer · Code-Suggester · Compliance-Checker · Clinician-Queue</div>
+  <div class="sl">Incoming Data</div>
+  <div class="g5" id="cases-scribe"></div>
+  <div class="sl">Agent Pipeline</div>
+  <div class="pip"><div class="ag" id="ag-scribe-0"><div class="ai">🎙️</div><div class="an">Transcriber</div><div class="at">Encounter audio → text</div><div class="as" id="as-scribe-0">waiting</div></div><div class="ag" id="ag-scribe-1"><div class="ai">📝</div><div class="an">Note-Structurer</div><div class="at">Organizes into SOAP</div><div class="as" id="as-scribe-1">waiting</div></div><div class="ag" id="ag-scribe-2"><div class="ai">🏷️</div><div class="an">Code-Suggester</div><div class="at">ICD-10 / CPT codes</div><div class="as" id="as-scribe-2">waiting</div></div><div class="ag" id="ag-scribe-3"><div class="ai">🛡️</div><div class="an">Compliance-Checker</div><div class="at">Flags missing elements</div><div class="as" id="as-scribe-3">waiting</div></div><div class="ag" id="ag-scribe-4"><div class="ai">👩‍⚕️</div><div class="an">Clinician-Queue</div><div class="at">Routes to provider</div><div class="as" id="as-scribe-4">waiting</div></div></div>
+  <button class="run-btn" id="btn-scribe" onclick="runPipeline('scribe', SCENARIOS['scribe'])">▶ Run Scribe Pipeline</button>
+  <div class="sl">Audit Trail</div>
+  <div class="audit" id="audit-scribe"><span style="color:#444">// Click Run to begin.</span></div>
+  <div id="results-scribe" style="display:none">
+    <div class="sl">Outcomes</div>
+    <div class="g5" id="res-grid-scribe"></div>
+  </div>
+</div>
+<div class="panel" id="panel-ed">
+  <div class="sc-label">Digital Health — Scenario 2</div>
+  <div class="sc-title">Emergency Department Triage & Patient Prioritization</div>
+  <div class="sc-sub">Agents: Intake-Bot · ESI-Scorer · Risk-Stratifier · Bed-Router · Escalation-Trigger</div>
+  <div class="sl">Incoming Data</div>
+  <div class="g5" id="cases-ed"></div>
+  <div class="sl">Agent Pipeline</div>
+  <div class="pip"><div class="ag" id="ag-ed-0"><div class="ai">📊</div><div class="an">Intake-Bot</div><div class="at">Vitals + chief complaint</div><div class="as" id="as-ed-0">waiting</div></div><div class="ag" id="ag-ed-1"><div class="ai">🔢</div><div class="an">ESI-Scorer</div><div class="at">Emergency Severity Index 1-5</div><div class="as" id="as-ed-1">waiting</div></div><div class="ag" id="ag-ed-2"><div class="ai">🎯</div><div class="an">Risk-Stratifier</div><div class="at">Time-sensitive dx flags</div><div class="as" id="as-ed-2">waiting</div></div><div class="ag" id="ag-ed-3"><div class="ai">🛏️</div><div class="an">Bed-Router</div><div class="at">Resus / Acute / Fast-track</div><div class="as" id="as-ed-3">waiting</div></div><div class="ag" id="ag-ed-4"><div class="ai">🔔</div><div class="an">Escalation-Trigger</div><div class="at">Attending / rapid response</div><div class="as" id="as-ed-4">waiting</div></div></div>
+  <button class="run-btn" id="btn-ed" onclick="runPipeline('ed', SCENARIOS['ed'])">▶ Run Triage Pipeline</button>
+  <div class="sl">Audit Trail</div>
+  <div class="audit" id="audit-ed"><span style="color:#444">// Click Run to begin.</span></div>
+  <div id="results-ed" style="display:none">
+    <div class="sl">Outcomes</div>
+    <div class="g5" id="res-grid-ed"></div>
+  </div>
+</div>
+<div class="panel" id="panel-dm">
+  <div class="sc-label">Digital Health — Scenario 3</div>
+  <div class="sc-title">Chronic Disease Management — Diabetes Care Gap Pipeline</div>
+  <div class="sc-sub">Agents: Registry-Scanner · Gap-Detector · Risk-Classifier · Outreach-Drafter · Care-Coordinator-Queue</div>
+  <div class="sl">Incoming Data</div>
+  <div class="g5" id="cases-dm"></div>
+  <div class="sl">Agent Pipeline</div>
+  <div class="pip"><div class="ag" id="ag-dm-0"><div class="ai">🗄️</div><div class="an">Registry-Scanner</div><div class="at">Pulls panel from EHR</div><div class="as" id="as-dm-0">waiting</div></div><div class="ag" id="ag-dm-1"><div class="ai">🔍</div><div class="an">Gap-Detector</div><div class="at">Overdue services flagged</div><div class="as" id="as-dm-1">waiting</div></div><div class="ag" id="ag-dm-2"><div class="ai">📊</div><div class="an">Risk-Classifier</div><div class="at">Urgent / Routine / Stable</div><div class="as" id="as-dm-2">waiting</div></div><div class="ag" id="ag-dm-3"><div class="ai">📱</div><div class="an">Outreach-Drafter</div><div class="at">Personalized message</div><div class="as" id="as-dm-3">waiting</div></div><div class="ag" id="ag-dm-4"><div class="ai">👤</div><div class="an">Care-Coord-Queue</div><div class="at">Assigns to care team</div><div class="as" id="as-dm-4">waiting</div></div></div>
+  <button class="run-btn" id="btn-dm" onclick="runPipeline('dm', SCENARIOS['dm'])">▶ Run Care Gap Pipeline</button>
+  <div class="sl">Audit Trail</div>
+  <div class="audit" id="audit-dm"><span style="color:#444">// Click Run to begin.</span></div>
+  <div id="results-dm" style="display:none">
+    <div class="sl">Outcomes</div>
+    <div class="g5" id="res-grid-dm"></div>
+  </div>
+</div>
+<script>
+const SCENARIOS = {
+  "scribe": {
+    agents: [{icon:"\ud83c\udf99\ufe0f",name:"Transcriber",task:"Encounter audio \u2192 text",doneText:"\u2713 5 transcribed"},{icon:"\ud83d\udcdd",name:"Note-Structurer",task:"Organizes into SOAP",doneText:"\u2713 5 structured"},{icon:"\ud83c\udff7\ufe0f",name:"Code-Suggester",task:"ICD-10 / CPT codes",doneText:"\u2713 5 coded"},{icon:"\ud83d\udee1\ufe0f",name:"Compliance-Checker",task:"Flags missing elements",doneText:"\u2713 4 flags raised"},{icon:"\ud83d\udc69\u200d\u2695\ufe0f",name:"Clinician-Queue",task:"Routes to provider",doneText:"\u2713 1 URGENT"}],
+    cases: [{id:"ENC-001",ingestLine:"Elena R. 58F | Primary Care | T2DM + HTN | Lisinopril 10mg added",displayFields:[{v:"Elena R., 58F"},{v:"Primary Care \u2014 Follow-up"},{v:"T2DM, HTN"},{v:"A1c reviewed. Lisinopril 10mg started."},{v:"\u26a0 Dropped digit risk",s:"color:#c0392b;font-size:0.59rem"}]},
+{id:"ENC-002",ingestLine:"James P. 67M | Pulmonology | COPD exacerbation | Prednisone 40mg",displayFields:[{v:"James P., 67M"},{v:"Pulmonology"},{v:"COPD exacerbation"},{v:"O2 sat 91%. Albuterol + Prednisone 40mg."},{v:"\u26a0 Attribution error risk",s:"color:#c0392b;font-size:0.59rem"}]},
+{id:"ENC-003",ingestLine:"Amara J. 34F | Primary Care | New patient anxiety/insomnia | Sertraline 25mg",displayFields:[{v:"Amara J., 34F"},{v:"Primary Care \u2014 New Patient"},{v:"Anxiety, insomnia"},{v:"Sertraline 25mg started. CBT referral."},{v:"\u26a0 Consent documentation",s:"color:#c0392b;font-size:0.59rem"}]},
+{id:"ENC-004",ingestLine:"Robert C. 72M | Orthopedics | Post-op knee day 14 | Warfarin + INR",displayFields:[{v:"Robert C., 72M"},{v:"Orthopedics \u2014 Post-op Day 14"},{v:"Knee replacement"},{v:"Warfarin 5mg. INR due next week."},{v:"\u26a0 INR order not formalized",s:"color:#c0392b;font-size:0.59rem"}]},
+{id:"ENC-005",ingestLine:"Destiny W. 45F | ED | Chest pain 2hrs | EKG ordered, troponin pending",displayFields:[{v:"Destiny W., 45F"},{v:"Emergency Department"},{v:"Chest pain \u2014 active workup"},{v:"EKG ordered. Troponin pending. Aspirin given."},{v:"\u26a0 High-acuity delay risk",s:"color:#c0392b;font-size:0.59rem"}]}],
+    results: [{id:"ENC-001",cardClass:"fail",badgeText:"FAILURE FLAG",badgeClass:"flagged",a1cls:"la",a1line:"ENC-001: SOAP structured \u2014 \"58F T2DM/HTN follow-up, lisinopril added, BP mildly elevated\"",a2cls:"la",a2line:"ENC-001: ICD-10 E11.9 Type 2 DM without complications | CPT 99213 Established moderate complexity",a3line:"ENC-001: \u26a0 FAILURE FLAG \u2014 Dropped digit risk: Lisinopril 10mg has documented transcription history as 1mg (10x underdose). Verify before signing.",a4cls:"lf",a4line:"ENC-001 \u2192 FLAG FOR REVIEW | Clinician note: Confirm lisinopril reads 10mg not 1mg before signing.",resultFields:[{v:"ICD-10: E11.9"},{v:"CPT: 99213"},{v:"\u26a0 DROPPED DIGIT RISK",s:"color:#c0392b;font-weight:bold"},{v:"Lisinopril 10mg \u2192 verify not 1mg"},{v:"Status: FLAG FOR REVIEW",s:"color:#a16207;font-weight:bold"}]},
+{id:"ENC-002",cardClass:"fail",badgeText:"FAILURE FLAG",badgeClass:"flagged",a1cls:"la",a1line:"ENC-002: SOAP structured \u2014 \"67M COPD exacerbation, O2 sat 91%, albuterol + prednisone 40mg ordered\"",a2cls:"la",a2line:"ENC-002: ICD-10 J44.1 COPD with acute exacerbation | CPT 99214 Established moderate-high complexity",a3line:"ENC-002: \u26a0 FAILURE FLAG \u2014 Attribution error risk: Prednisone order pattern matches prior patient in session. Confirm attributed to James P. not carried from prior encounter.",a4cls:"lf",a4line:"ENC-002 \u2192 FLAG FOR REVIEW | Clinician note: Verify prednisone 40mg is attributed to this patient, not prior encounter.",resultFields:[{v:"ICD-10: J44.1"},{v:"CPT: 99214"},{v:"\u26a0 ATTRIBUTION RISK",s:"color:#c0392b;font-weight:bold"},{v:"Confirm prednisone not carried over"},{v:"Status: FLAG FOR REVIEW",s:"color:#a16207;font-weight:bold"}]},
+{id:"ENC-003",cardClass:"warn",badgeText:"COMPLIANCE FLAG",badgeClass:"review",a1cls:"la",a1line:"ENC-003: SOAP structured \u2014 \"34F new patient, anxiety/insomnia, sertraline 25mg initiated, CBT referral placed\"",a2cls:"la",a2line:"ENC-003: ICD-10 F41.1 Generalized anxiety disorder | CPT 99205 New patient high complexity",a3line:"ENC-003: \u26a0 COMPLIANCE FLAG \u2014 Informed consent for psychiatric medication not documented in note. Required before sertraline initiation.",a4cls:"lw",a4line:"ENC-003 \u2192 FLAG FOR REVIEW | Clinician note: Add informed consent documentation for sertraline before finalizing.",resultFields:[{v:"ICD-10: F41.1"},{v:"CPT: 99205"},{v:"\u26a0 CONSENT MISSING",s:"color:#7c3aed;font-weight:bold"},{v:"Document sertraline consent"},{v:"Status: FLAG FOR REVIEW",s:"color:#a16207;font-weight:bold"}]},
+{id:"ENC-004",cardClass:"warn",badgeText:"COMPLIANCE FLAG",badgeClass:"review",a1cls:"la",a1line:"ENC-004: SOAP structured \u2014 \"72M post-op knee day 14, healing well, PT continuing, warfarin 5mg\"",a2cls:"la",a2line:"ENC-004: ICD-10 Z47.1 Aftercare joint replacement | CPT 99213 Established moderate complexity",a3line:"ENC-004: \u26a0 COMPLIANCE FLAG \u2014 INR follow-up mentioned verbally in encounter, not formally ordered in note. Insufficient for anticoagulation documentation.",a4cls:"lw",a4line:"ENC-004 \u2192 FLAG FOR REVIEW | Clinician note: Formalize INR order in note \u2014 verbal mention alone insufficient.",resultFields:[{v:"ICD-10: Z47.1"},{v:"CPT: 99213"},{v:"\u26a0 INR ORDER MISSING",s:"color:#7c3aed;font-weight:bold"},{v:"Formalize INR in note"},{v:"Status: FLAG FOR REVIEW",s:"color:#a16207;font-weight:bold"}]},
+{id:"ENC-005",cardClass:"fail",badgeText:"URGENT",badgeClass:"urgent",a1cls:"la",a1line:"ENC-005: SOAP structured \u2014 \"45F ED chest pain, EKG ordered, troponin pending, aspirin 324mg given, cardiology consulted\"",a2cls:"la",a2line:"ENC-005: ICD-10 R07.9 Chest pain unspecified | CPT 99285 ED visit high complexity",a3line:"ENC-005: \u26a0 HIGH-ACUITY DELAY \u2014 Scribe processing lag on active cardiac workup. Troponin + EKG results must be addended immediately when available. Do not wait for scribe.",a4cls:"lf",a4line:"ENC-005 \u2192 URGENT | Clinician note: Addend troponin and EKG results manually as soon as available. Do not wait for scribe queue.",resultFields:[{v:"ICD-10: R07.9"},{v:"CPT: 99285"},{v:"\u26a0 HIGH-ACUITY DELAY",s:"color:#c0392b;font-weight:bold"},{v:"Addend troponin + EKG manually"},{v:"Status: URGENT",s:"color:#7f1d1d;font-weight:bold"}]}]
+  },
+  "ed": {
+    agents: [{icon:"\ud83d\udcca",name:"Intake-Bot",task:"Vitals + chief complaint",doneText:"\u2713 5 processed"},{icon:"\ud83d\udd22",name:"ESI-Scorer",task:"Emergency Severity Index 1-5",doneText:"\u2713 5 scored"},{icon:"\ud83c\udfaf",name:"Risk-Stratifier",task:"Time-sensitive dx flags",doneText:"\u2713 3 high-risk flags"},{icon:"\ud83d\udecf\ufe0f",name:"Bed-Router",task:"Resus / Acute / Fast-track",doneText:"\u2713 5 routed"},{icon:"\ud83d\udd14",name:"Escalation-Trigger",task:"Attending / rapid response",doneText:"\u2713 2 attending alerts"}],
+    cases: [{id:"PT-001",ingestLine:"Marcus S. 67M | Chest pressure, diaphoresis, SOB x30min | BP 158/94 HR 102",displayFields:[{v:"Marcus S., 67M"},{v:"CC: Chest pressure 8/10, diaphoresis, SOB"},{v:"BP 158/94 \u00b7 HR 102 \u00b7 O2 97% RA"},{v:"Hx: CAD, DM, HTN"},{v:"Onset: 30 minutes ago"}]},
+{id:"PT-002",ingestLine:"Keisha T. 34F | Migraine 9/10, photophobia, N/V x4hrs | Vitals stable",displayFields:[{v:"Keisha T., 34F"},{v:"CC: Migraine 9/10, photophobia, N/V"},{v:"BP 118/76 \u00b7 HR 88 \u00b7 O2 99% RA"},{v:"Hx: Known migraineur, no neuro sx"},{v:"Onset: 4 hours ago"}]},
+{id:"PT-003",ingestLine:"David L. 8M | Fever 104.2, stiff neck, petechial rash x2hrs",displayFields:[{v:"David L., 8M (Pediatric)"},{v:"CC: Fever 104.2\u00b0F, neck stiffness, rash"},{v:"BP 98/62 \u00b7 HR 128 \u00b7 O2 98% RA"},{v:"Rash: Non-blanching petechiae"},{v:"Onset: 2 hours ago"}]},
+{id:"PT-004",ingestLine:"Rosa P. 52F | Right ankle pain/swelling after fall | Vitals stable, ambulating",displayFields:[{v:"Rosa P., 52F"},{v:"CC: Right ankle pain + swelling"},{v:"BP 128/82 \u00b7 HR 78 \u00b7 O2 99% RA"},{v:"Mechanism: Fall, ambulating with limp"},{v:"No NV compromise"}]},
+{id:"PT-005",ingestLine:"James K. 78M | Acute confusion, not at baseline | BP 102/68 HR 118",displayFields:[{v:"James K., 78M"},{v:"CC: Acute confusion, not at baseline"},{v:"BP 102/68 \u00b7 HR 118 \u00b7 O2 95% RA"},{v:"Hx: HTN, atrial fibrillation"},{v:"Per daughter: rapid change x2hrs"}]}],
+    results: [{id:"PT-001",cardClass:"fail",badgeText:"ESI 2 \u2014 Resus Bay",badgeClass:"high",a1cls:"lf",a1line:"PT-001: ESI 2 \u2014 High-risk presentation. Chest pressure + diaphoresis + CAD history = ACS until proven otherwise.",a2cls:"lf",a2line:"PT-001: RISK FLAG \u2014 Acute Coronary Syndrome. Time-sensitive: door-to-ECG target <10 minutes. STEMI alert on standby.",a3line:"PT-001: Bed \u2192 Resus Bay 1. ACS protocol initiated. 12-lead ECG, troponin, aspirin 325mg, IV access.",a4cls:"lf",a4line:"PT-001 \u2192 Attending STAT + Cardiology notification | STEMI alert activated pending ECG result.",resultFields:[{v:"ESI: 2 \u2014 High Risk",s:"font-weight:bold;color:#c0392b"},{v:"Dx flag: ACS / STEMI"},{v:"Bed: Resus Bay 1"},{v:"Alert: Attending STAT + Cardiology"}]},
+{id:"PT-002",cardClass:"hold",badgeText:"ESI 3 \u2014 Acute Area",badgeClass:"medium",a1cls:"lw",a1line:"PT-002: ESI 3 \u2014 Moderate. Migraine severity high but vitals stable, no neurological deficit reported.",a2cls:"lw",a2line:"PT-002: MONITOR \u2014 Known migraineur, no new neurological symptoms. Standard migraine protocol appropriate.",a3line:"PT-002: Bed \u2192 Acute Area bay with dimmed lighting. Antiemetic + pain protocol. Reassess in 30 minutes.",a4cls:"lw",a4line:"PT-002 \u2192 Routine triage, nurse-initiated protocol | No attending escalation needed at this time.",resultFields:[{v:"ESI: 3 \u2014 Moderate",s:"font-weight:bold;color:#a16207"},{v:"Dx: Migraine (known)"},{v:"Bed: Acute Area"},{v:"Alert: Nurse protocol, no escalation"}]},
+{id:"PT-003",cardClass:"fail",badgeText:"ESI 1 \u2014 RESUS STAT",badgeClass:"critical",a1cls:"lf",a1line:"PT-003: ESI 1 \u2014 IMMEDIATE. Pediatric fever + neck stiffness + non-blanching petechiae = meningococcal meningitis until proven otherwise.",a2cls:"lf",a2line:"PT-003: CRITICAL FLAG \u2014 Meningococcal disease. Non-blanching petechial rash is pathognomonic. Mortality risk without immediate antibiotics.",a3line:"PT-003: Bed \u2192 Resus Bay (isolation). Ceftriaxone IV STAT, LP if stable, droplet precautions, family isolation.",a4cls:"lf",a4line:"PT-003 \u2192 Attending STAT + Peds ID + Infection Control | Droplet isolation initiated. Public health notification required.",resultFields:[{v:"ESI: 1 \u2014 IMMEDIATE",s:"font-weight:bold;color:#7f1d1d"},{v:"Dx flag: Meningococcal meningitis"},{v:"Bed: Resus \u2014 Isolation"},{v:"Alert: STAT + Peds ID + Infection Control"}]},
+{id:"PT-004",cardClass:"pass",badgeText:"ESI 4 \u2014 Fast Track",badgeClass:"low",a1cls:"lp",a1line:"PT-004: ESI 4 \u2014 Less urgent. Ankle injury, vitals stable, ambulatory, no NV compromise.",a2cls:"lp",a2line:"PT-004: LOW RISK \u2014 Musculoskeletal injury, no time-sensitive diagnosis. Ottawa Ankle Rules applicable.",a3line:"PT-004: Bed \u2192 Fast Track. Ottawa Ankle Rules applied, X-ray ordered. Ice, elevation, pain management.",a4cls:"lp",a4line:"PT-004 \u2192 Fast Track nurse-initiated | X-ray order placed. No attending escalation.",resultFields:[{v:"ESI: 4 \u2014 Less Urgent",s:"font-weight:bold;color:#3a7d44"},{v:"Dx: Ankle injury"},{v:"Bed: Fast Track"},{v:"Alert: None \u2014 routine"}]},
+{id:"PT-005",cardClass:"fail",badgeText:"ESI 2 \u2014 Acute Bay",badgeClass:"high",a1cls:"lf",a1line:"PT-005: ESI 2 \u2014 High-risk. Acute confusion + hypotension + tachycardia in elderly AFib patient = multi-etiology emergency.",a2cls:"lf",a2line:"PT-005: RISK FLAG \u2014 Sepsis vs. ACS vs. Stroke. BP 102/68 + HR 118 + confusion = hemodynamic instability. Time-sensitive.",a3line:"PT-005: Bed \u2192 Acute Bay. Sepsis protocol, lactate, blood cultures x2, 1L NS bolus, 12-lead ECG, NIHSS screen.",a4cls:"lf",a4line:"PT-005 \u2192 Attending alert + Neurology notification | Sepsis protocol initiated. Stroke alert if NIHSS positive.",resultFields:[{v:"ESI: 2 \u2014 High Risk",s:"font-weight:bold;color:#c0392b"},{v:"Dx flag: Sepsis / ACS / Stroke"},{v:"Bed: Acute Bay"},{v:"Alert: Attending + Neurology"}]}]
+  },
+  "dm": {
+    agents: [{icon:"\ud83d\uddc4\ufe0f",name:"Registry-Scanner",task:"Pulls panel from EHR",doneText:"\u2713 5 patients scanned"},{icon:"\ud83d\udd0d",name:"Gap-Detector",task:"Overdue services flagged",doneText:"\u2713 5 gaps identified"},{icon:"\ud83d\udcca",name:"Risk-Classifier",task:"Urgent / Routine / Stable",doneText:"\u2713 3 urgent"},{icon:"\ud83d\udcf1",name:"Outreach-Drafter",task:"Personalized message",doneText:"\u2713 5 drafted"},{icon:"\ud83d\udc64",name:"Care-Coord-Queue",task:"Assigns to care team",doneText:"\u2713 3 assigned today"}],
+    cases: [{id:"PT-A",ingestLine:"Maria G. 61F | A1c 9.2% (6mo ago) | 3 missed appts | Metformin lapsed 45 days",displayFields:[{v:"Maria G., 61F"},{v:"Last A1c: 9.2% \u2014 6 months ago"},{v:"Missed appointments: 3"},{v:"Metformin refill lapsed: 45 days"},{v:"Foot exam: Overdue 2 years"}]},
+{id:"PT-B",ingestLine:"DeShawn W. 48M | A1c 7.1% last month | Compliant | Eye exam overdue 4mo",displayFields:[{v:"DeShawn W., 48M"},{v:"Last A1c: 7.1% \u2014 last month"},{v:"Medication: Compliant"},{v:"Missed appointments: 0"},{v:"Annual eye exam: Overdue 4 months"}]},
+{id:"PT-C",ingestLine:"Helen K. 72F | A1c 8.8% | On insulin | No foot exam 18mo | Lives alone | 2 hypoglycemic episodes",displayFields:[{v:"Helen K., 72F"},{v:"Last A1c: 8.8% \u2014 on insulin glargine"},{v:"Hypoglycemic episodes: 2 this year"},{v:"Foot exam: Overdue 18 months"},{v:"Social: Lives alone"}]},
+{id:"PT-D",ingestLine:"James T. 54M | A1c 6.9% | All preventive services current | No gaps",displayFields:[{v:"James T., 54M"},{v:"Last A1c: 6.9% \u2014 controlled"},{v:"Medication: Compliant"},{v:"Preventive services: All current"},{v:"Missed appointments: 0"}]},
+{id:"PT-E",ingestLine:"Priya S. 39F | Newly diagnosed 3wks | A1c 11.2% | Uninsured | No diabetes education | Gujarati primary",displayFields:[{v:"Priya S., 39F"},{v:"Newly diagnosed: 3 weeks ago"},{v:"Last A1c: 11.2%"},{v:"Insurance: Uninsured"},{v:"Language: Gujarati primary | No diabetes education"}]}],
+    results: [{id:"PT-A",cardClass:"fail",badgeText:"URGENT",badgeClass:"urgent",a1cls:"lf",a1line:"PT-A: GAPS DETECTED \u2014 A1c overdue (6mo), metformin lapsed 45 days, foot exam overdue 2 years, 3 missed appointments.",a2cls:"lf",a2line:"PT-A: URGENT \u2014 Medication lapse + elevated A1c + missed appointments = decompensation risk. Pattern suggests disengagement.",a3line:"PT-A: Outreach \u2192 Care coordinator call today. Warm handoff, not automated message. Explore barriers to engagement.",a4cls:"lf",a4line:"PT-A \u2192 Care Coordinator assigned TODAY | Priority: re-engage, medication restart, foot exam scheduling.",resultFields:[{v:"Gaps: A1c + Meds + Foot exam",s:"font-weight:bold"},{v:"Risk: URGENT \u2014 decompensation",s:"color:#c0392b;font-weight:bold"},{v:"Action: Care coord call today"},{v:"Key: Explore disengagement barriers"}]},
+{id:"PT-B",cardClass:"pass",badgeText:"ROUTINE \u2014 Reminder",badgeClass:"complete",a1cls:"lp",a1line:"PT-B: ONE GAP \u2014 Annual dilated eye exam overdue 4 months. All other services current.",a2cls:"lp",a2line:"PT-B: ROUTINE \u2014 Single preventive gap, A1c well-controlled, patient compliant. Low decompensation risk.",a3line:"PT-B: Outreach \u2192 Automated reminder + scheduling link for eye exam. Patient portal message.",a4cls:"lp",a4line:"PT-B \u2192 Automated reminder queue | No care coordinator needed. Schedule eye exam within 60 days.",resultFields:[{v:"Gap: Eye exam (4mo overdue)",s:"font-weight:bold"},{v:"Risk: ROUTINE",s:"color:#3a7d44;font-weight:bold"},{v:"Action: Automated reminder"},{v:"Timeline: 60 days"}]},
+{id:"PT-C",cardClass:"fail",badgeText:"URGENT \u2014 Safety Risk",badgeClass:"urgent",a1cls:"lf",a1line:"PT-C: GAPS DETECTED \u2014 A1c elevated (8.8%), foot exam overdue 18 months, 2 hypoglycemic episodes, lives alone.",a2cls:"lf",a2line:"PT-C: URGENT \u2014 SAFETY RISK. Elderly patient on insulin with hypoglycemic episodes living alone = fall/loss of consciousness risk. Foot exam gap risks ulcer/amputation.",a3line:"PT-C: Outreach \u2192 RN call today for hypoglycemia safety plan. Social work consult for isolation assessment.",a4cls:"lf",a4line:"PT-C \u2192 RN call TODAY + Social Work consult | Foot exam within 2 weeks. Hypoglycemia safety protocol.",resultFields:[{v:"Gaps: Foot exam + Hypoglycemia",s:"font-weight:bold"},{v:"Risk: URGENT SAFETY \u2014 lives alone",s:"color:#c0392b;font-weight:bold"},{v:"Action: RN + Social Work today"},{v:"Key: Fall/LOC risk on insulin"}]},
+{id:"PT-D",cardClass:"pass",badgeText:"STABLE \u2014 No Action",badgeClass:"complete",a1cls:"lp",a1line:"PT-D: NO GAPS \u2014 All preventive services current, A1c controlled at 6.9%, medication compliant.",a2cls:"lp",a2line:"PT-D: STABLE \u2014 No gaps identified. Low risk. Next contact at annual visit.",a3line:"PT-D: No outreach needed. Flag for next annual visit in EHR.",a4cls:"lp",a4line:"PT-D \u2192 Annual visit flag only | No care coordinator action needed.",resultFields:[{v:"Gaps: None",s:"font-weight:bold"},{v:"Risk: STABLE",s:"color:#3a7d44;font-weight:bold"},{v:"Action: Annual visit flag only"},{v:"No outreach needed"}]},
+{id:"PT-E",cardClass:"fail",badgeText:"URGENT \u2014 Complex",badgeClass:"urgent",a1cls:"lf",a1line:"PT-E: GAPS DETECTED \u2014 Newly diagnosed 3 weeks, A1c 11.2%, no diabetes education, uninsured, language barrier.",a2cls:"lf",a2line:"PT-E: URGENT \u2014 COMPLEX. New T2DM at A1c 11.2% without education or insurance is a highest-risk onboarding scenario. Language barrier compounds all access issues.",a3line:"PT-E: Outreach \u2192 Care navigator TODAY with Gujarati interpreter. Financial counselor for MassHealth enrollment. Diabetes education in preferred language.",a4cls:"lf",a4line:"PT-E \u2192 Care Navigator + Interpreter + Financial Counselor | Diabetes education enrollment within 1 week.",resultFields:[{v:"Gaps: Education + Insurance + Language",s:"font-weight:bold"},{v:"Risk: URGENT COMPLEX",s:"color:#c0392b;font-weight:bold"},{v:"Action: Navigator + Interpreter + Finance"},{v:"Key: Newly diagnosed, high A1c"}]}]
+  },
+};
+
+
+function switchTab(panelId){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+panelId).classList.add('active');
+  document.getElementById('panel-'+panelId).classList.add('active');
+}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+function setAg(pid,idx,state,text){
+  document.getElementById('ag-'+pid+'-'+idx).className='ag '+state;
+  document.getElementById('as-'+pid+'-'+idx).innerHTML=text;
+}
+function logLine(pid,cls,txt){
+  const el=document.getElementById('audit-'+pid);
+  const t=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const d=document.createElement('div');
+  d.innerHTML='<span class="t">['+t+']</span> <span class="'+cls+'">'+txt+'</span>';
+  if(el.querySelector('span[style]'))el.innerHTML='';
+  el.appendChild(d);el.scrollTop=el.scrollHeight;
+}
+async function runPipeline(pid, SCENARIO){
+  document.getElementById('btn-'+pid).disabled=true;
+  document.getElementById('results-'+pid).style.display='none';
+  document.getElementById('audit-'+pid).innerHTML='';
+  renderCases(pid, SCENARIO.cases, null);
+  for(let i=0;i<5;i++) setAg(pid,i,'','waiting');
+
+  // Agent 0 — instant (no AI needed)
+  setAg(pid,0,'running','<span class="spin">⟳</span> processing...');
+  await sleep(350);
+  logLine(pid,'ls','══ '+SCENARIO.agents[0].name.toUpperCase()+' ══');
+  for(const c of SCENARIO.cases){
+    logLine(pid,'la','['+SCENARIO.agents[0].name+'] '+c.ingestLine);
+    await sleep(90);
+  }
+  setAg(pid,0,'done','✓ 5 ingested');
+
+  // Agents 1-4 — batch
+  await sleep(250);
+  for(let i=1;i<5;i++) setAg(pid,i,'running','<span class="spin">⟳</span>...');
+  logLine(pid,'ls','══ AI ANALYSIS — BATCH ══');
+  logLine(pid,'la','[System] Processing through '+SCENARIO.agents.slice(1).map(a=>a.name).join(' + ')+'...');
+  await sleep(800);
+
+  const results = SCENARIO.results;
+
+  // Agent 1 audit
+  logLine(pid,'ls','══ '+SCENARIO.agents[1].name.toUpperCase()+' ══');
+  for(let i=0;i<results.length;i++){
+    logLine(pid, results[i].a1cls, '['+SCENARIO.agents[1].name+'] '+results[i].a1line);
+    await sleep(90);
+  }
+  setAg(pid,1,'done',SCENARIO.agents[1].doneText);
+
+  // Agent 2 audit
+  await sleep(120);
+  logLine(pid,'ls','══ '+SCENARIO.agents[2].name.toUpperCase()+' ══');
+  for(let i=0;i<results.length;i++){
+    logLine(pid, results[i].a2cls, '['+SCENARIO.agents[2].name+'] '+results[i].a2line);
+    await sleep(90);
+  }
+  setAg(pid,2,'done',SCENARIO.agents[2].doneText);
+
+  // Agent 3 audit
+  await sleep(120);
+  logLine(pid,'ls','══ '+SCENARIO.agents[3].name.toUpperCase()+' ══');
+  for(let i=0;i<results.length;i++){
+    logLine(pid,'la','['+SCENARIO.agents[3].name+'] '+results[i].a3line);
+    await sleep(90);
+  }
+  setAg(pid,3,'done',SCENARIO.agents[3].doneText);
+
+  // Agent 4 audit
+  await sleep(120);
+  logLine(pid,'ls','══ '+SCENARIO.agents[4].name.toUpperCase()+' ══');
+  for(let i=0;i<results.length;i++){
+    logLine(pid, results[i].a4cls, '['+SCENARIO.agents[4].name+'] '+results[i].a4line);
+    await sleep(90);
+  }
+  setAg(pid,4,'done',SCENARIO.agents[4].doneText);
+
+  renderCases(pid, SCENARIO.cases, results);
+  renderResults(pid, SCENARIO, results);
+
+  document.getElementById('btn-'+pid).disabled=false;
+  document.getElementById('btn-'+pid).textContent='↺ Run Again';
+}
+
+function renderCases(pid, cases, results){
+  document.getElementById('cases-'+pid).innerHTML = cases.map((c,i)=>{
+    const r = results ? results[i] : null;
+    const cc = r ? r.cardClass : '';
+    const bt = r ? r.badgeText : 'PENDING';
+    const bc = r ? r.badgeClass : '';
+    return '<div class="card '+cc+'"><div class="cn">'+c.id+'</div>'
+      + c.displayFields.map(f=>'<div class="cf"'+(f.s?' style="'+f.s+'"':'')+'>'+f.v+'</div>').join('')
+      + '<span class="badge '+bc+'">'+bt+'</span></div>';
+  }).join('');
+}
+
+function renderResults(pid, SCENARIO, results){
+  document.getElementById('res-grid-'+pid).innerHTML = results.map(r=>
+    '<div class="card '+r.cardClass+'"><div class="cn">'+r.id+'</div>'
+    + r.resultFields.map(f=>'<div class="cf"'+(f.s?' style="'+f.s+'"':'')+'>'+f.v+'</div>').join('')
+    + '</div>'
+  ).join('');
+  document.getElementById('results-'+pid).style.display='block';
+  document.getElementById('results-'+pid).scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// Activate first tab
+document.getElementById('tab-scribe').classList.add('active');
+document.getElementById('panel-scribe').classList.add('active');
+// Init all case grids
+Object.keys(SCENARIOS).forEach(pid => renderCases(pid, SCENARIOS[pid].cases, null));
+</script>
+</body>
+</html>

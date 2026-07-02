@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AI Agent Pipeline — Public Health</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Georgia',serif;background:#F7F6F2;color:#1a1a1a;min-height:100vh;padding:16px 12px;}
+  .hdr{background:#1a1a1a;color:white;padding:12px 14px;margin:-16px -12px 18px;font-size:0.75rem;font-family:monospace;letter-spacing:0.04em;}
+  .hdr span{color:#a0f0a0;}
+  .tabs{display:flex;gap:7px;margin-bottom:18px;flex-wrap:wrap;}
+  .tab{padding:8px 14px;border:1.5px solid #E0DDD6;border-radius:5px;font-size:0.73rem;cursor:pointer;background:white;color:#888;font-family:'Georgia',serif;transition:all 0.2s;}
+  .tab.active{background:#1a1a1a;color:white;border-color:#1a1a1a;}
+  .panel{display:none;}.panel.active{display:block;}
+  .sc-label{font-size:0.6rem;font-family:monospace;text-transform:uppercase;letter-spacing:0.1em;color:#999;margin-bottom:4px;}
+  .sc-title{font-size:0.95rem;font-weight:normal;margin-bottom:2px;}
+  .sc-sub{font-size:0.68rem;color:#888;font-family:monospace;margin-bottom:14px;}
+  .sl{font-size:0.6rem;font-family:monospace;text-transform:uppercase;letter-spacing:0.08em;color:#999;margin-bottom:5px;margin-top:14px;}
+  .g5{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;}
+  .card{background:white;border:1.5px solid #E0DDD6;border-radius:6px;padding:8px 7px;font-size:0.63rem;}
+  .card.pass{border-color:#3a7d44;background:#f0faf1;}.card.fail{border-color:#c0392b;background:#fdf3f2;}
+  .card.hold{border-color:#d97706;background:#fffbeb;}.card.warn{border-color:#7c3aed;background:#faf5ff;}
+  .cn{font-weight:bold;font-size:0.7rem;margin-bottom:4px;}
+  .cf{color:#666;margin-bottom:2px;line-height:1.35;font-size:0.61rem;}
+  .badge{display:inline-block;margin-top:4px;padding:2px 5px;border-radius:3px;font-size:0.56rem;font-family:monospace;font-weight:bold;background:#eee;color:#888;}
+  .badge.high{background:#fee2e2;color:#c0392b;}.badge.medium{background:#fef9c3;color:#a16207;}
+  .badge.low{background:#dcfce7;color:#3a7d44;}.badge.critical{background:#4c0519;color:#fda4af;}
+  .badge.flagged{background:#fee2e2;color:#c0392b;}.badge.complete{background:#dcfce7;color:#3a7d44;}
+  .badge.review{background:#dbeafe;color:#1d4ed8;}.badge.warn2{background:#fef9c3;color:#a16207;}
+  .badge.urgent{background:#7f1d1d;color:#fca5a5;}
+  .pip{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:4px;}
+  .ag{background:white;border:1.5px solid #E0DDD6;border-radius:6px;padding:8px 6px;text-align:center;}
+  .ag.running{border-color:#2D6A9F;box-shadow:0 0 0 3px rgba(45,106,159,0.1);}.ag.done{border-color:#3a7d44;}
+  .ai{font-size:1.2rem;margin-bottom:2px;}.an{font-size:0.62rem;font-weight:bold;color:#333;margin-bottom:2px;}
+  .at{font-size:0.55rem;color:#888;font-family:monospace;}.as{margin-top:4px;font-size:0.55rem;font-family:monospace;color:#2D6A9F;min-height:11px;}
+  .run-btn{background:#1a1a1a;color:white;border:none;padding:9px 24px;font-size:0.78rem;font-family:'Georgia',serif;letter-spacing:0.05em;border-radius:4px;cursor:pointer;display:block;margin:12px auto;}
+  .run-btn:hover{background:#333;}.run-btn:disabled{background:#999;cursor:not-allowed;}
+  .audit{background:#1a1a1a;border-radius:6px;padding:12px;font-family:monospace;font-size:0.62rem;color:#a0f0a0;min-height:80px;max-height:200px;overflow-y:auto;line-height:1.6;}
+  .t{color:#666;}.la{color:#7dd3fc;}.lp{color:#86efac;}.lf{color:#fca5a5;}.lw{color:#fde68a;}.ls{color:#c084fc;}
+
+  @keyframes spin{to{transform:rotate(360deg);}}.spin{display:inline-block;animation:spin 0.7s linear infinite;}
+</style>
+</head>
+<body>
+<div class="hdr">Public Health Course — AI Agent Pipeline Simulator — <span>AI Agent Pipeline Simulator</span> — Dr. Dipu Patel | ReasonFirst © 2026</div>
+<div class="tabs"><div class="tab" id="tab-surv" onclick="switchTab('surv')">🦠 Disease Surveillance</div><div class="tab" id="tab-sdoh" onclick="switchTab('sdoh')">⚖️ Health Equity & SDOH</div><div class="tab" id="tab-vacc" onclick="switchTab('vacc')">💉 Vaccine Coverage Gap</div></div>
+
+<div class="panel" id="panel-surv">
+  <div class="sc-label">Public Health — Scenario 1</div>
+  <div class="sc-title">Disease Surveillance & Outbreak Detection</div>
+  <div class="sc-sub">Agents: Data-Ingester · Anomaly-Detector · Risk-Classifier · Alert-Drafter · Escalation-Router</div>
+  <div class="sl">Incoming Data</div>
+  <div class="g5" id="cases-surv"></div>
+  <div class="sl">Agent Pipeline</div>
+  <div class="pip"><div class="ag" id="ag-surv-0"><div class="ai">📡</div><div class="an">Data-Ingester</div><div class="at">Pulls multi-source reports</div><div class="as" id="as-surv-0">waiting</div></div><div class="ag" id="ag-surv-1"><div class="ai">🔍</div><div class="an">Anomaly-Detector</div><div class="at">Finds clusters & patterns</div><div class="as" id="as-surv-1">waiting</div></div><div class="ag" id="ag-surv-2"><div class="ai">⚠️</div><div class="an">Risk-Classifier</div><div class="at">HIGH / MED / LOW</div><div class="as" id="as-surv-2">waiting</div></div><div class="ag" id="ag-surv-3"><div class="ai">📢</div><div class="an">Alert-Drafter</div><div class="at">Health dept notice</div><div class="as" id="as-surv-3">waiting</div></div><div class="ag" id="ag-surv-4"><div class="ai">🚨</div><div class="an">Escalation-Router</div><div class="at">Local / State / CDC</div><div class="as" id="as-surv-4">waiting</div></div></div>
+  <button class="run-btn" id="btn-surv" onclick="runPipeline('surv', SCENARIOS['surv'])">▶ Run Surveillance Pipeline</button>
+  <div class="sl">Audit Trail</div>
+  <div class="audit" id="audit-surv"><span style="color:#444">// Click Run to begin.</span></div>
+  <div id="results-surv" style="display:none">
+    <div class="sl">Outcomes</div>
+    <div class="g5" id="res-grid-surv"></div>
+  </div>
+</div>
+<div class="panel" id="panel-sdoh">
+  <div class="sc-label">Public Health — Scenario 2</div>
+  <div class="sc-title">Health Equity & Social Determinants Screening</div>
+  <div class="sc-sub">Agents: Data-Aggregator · SDOH-Scorer · Disparity-Detector · Intervention-Planner · Resource-Router</div>
+  <div class="sl">Incoming Data</div>
+  <div class="g5" id="cases-sdoh"></div>
+  <div class="sl">Agent Pipeline</div>
+  <div class="pip"><div class="ag" id="ag-sdoh-0"><div class="ai">🗄️</div><div class="an">Data-Aggregator</div><div class="at">Census + claims + BRFSS</div><div class="as" id="as-sdoh-0">waiting</div></div><div class="ag" id="ag-sdoh-1"><div class="ai">📈</div><div class="an">SDOH-Scorer</div><div class="at">Composite vulnerability index</div><div class="as" id="as-sdoh-1">waiting</div></div><div class="ag" id="ag-sdoh-2"><div class="ai">⚖️</div><div class="an">Disparity-Detector</div><div class="at">vs. city baseline</div><div class="as" id="as-sdoh-2">waiting</div></div><div class="ag" id="ag-sdoh-3"><div class="ai">🏥</div><div class="an">Intervention-Planner</div><div class="at">CHW / mobile / telehealth</div><div class="as" id="as-sdoh-3">waiting</div></div><div class="ag" id="ag-sdoh-4"><div class="ai">📍</div><div class="an">Resource-Router</div><div class="at">Matches programs to tracts</div><div class="as" id="as-sdoh-4">waiting</div></div></div>
+  <button class="run-btn" id="btn-sdoh" onclick="runPipeline('sdoh', SCENARIOS['sdoh'])">▶ Run Equity Pipeline</button>
+  <div class="sl">Audit Trail</div>
+  <div class="audit" id="audit-sdoh"><span style="color:#444">// Click Run to begin.</span></div>
+  <div id="results-sdoh" style="display:none">
+    <div class="sl">Outcomes</div>
+    <div class="g5" id="res-grid-sdoh"></div>
+  </div>
+</div>
+<div class="panel" id="panel-vacc">
+  <div class="sc-label">Public Health — Scenario 3</div>
+  <div class="sc-title">Immunization Coverage Gap Analysis & Outreach Routing</div>
+  <div class="sc-sub">Agents: Registry-Puller · Gap-Identifier · Risk-Stratifier · Outreach-Drafter · Campaign-Router</div>
+  <div class="sl">Incoming Data</div>
+  <div class="g5" id="cases-vacc"></div>
+  <div class="sl">Agent Pipeline</div>
+  <div class="pip"><div class="ag" id="ag-vacc-0"><div class="ai">📋</div><div class="an">Registry-Puller</div><div class="at">IZ database extraction</div><div class="as" id="as-vacc-0">waiting</div></div><div class="ag" id="ag-vacc-1"><div class="ai">📉</div><div class="an">Gap-Identifier</div><div class="at">Actual vs. target coverage</div><div class="as" id="as-vacc-1">waiting</div></div><div class="ag" id="ag-vacc-2"><div class="ai">🔴</div><div class="an">Risk-Stratifier</div><div class="at">Critical / Moderate / Monitor</div><div class="as" id="as-vacc-2">waiting</div></div><div class="ag" id="ag-vacc-3"><div class="ai">✉️</div><div class="an">Outreach-Drafter</div><div class="at">Tailored segment message</div><div class="as" id="as-vacc-3">waiting</div></div><div class="ag" id="ag-vacc-4"><div class="ai">📣</div><div class="an">Campaign-Router</div><div class="at">Channel + timeline</div><div class="as" id="as-vacc-4">waiting</div></div></div>
+  <button class="run-btn" id="btn-vacc" onclick="runPipeline('vacc', SCENARIOS['vacc'])">▶ Run Vaccine Pipeline</button>
+  <div class="sl">Audit Trail</div>
+  <div class="audit" id="audit-vacc"><span style="color:#444">// Click Run to begin.</span></div>
+  <div id="results-vacc" style="display:none">
+    <div class="sl">Outcomes</div>
+    <div class="g5" id="res-grid-vacc"></div>
+  </div>
+</div>
+<script>
+const SCENARIOS = {
+  "surv": {
+    agents: [{icon:"\ud83d\udce1",name:"Data-Ingester",task:"Pulls multi-source reports",doneText:"\u2713 5 ingested"},{icon:"\ud83d\udd0d",name:"Anomaly-Detector",task:"Finds clusters & patterns",doneText:"\u2713 2 clusters found"},{icon:"\u26a0\ufe0f",name:"Risk-Classifier",task:"HIGH / MED / LOW",doneText:"\u2713 3 HIGH, 2 MED"},{icon:"\ud83d\udce2",name:"Alert-Drafter",task:"Health dept notice",doneText:"\u2713 5 alerts drafted"},{icon:"\ud83d\udea8",name:"Escalation-Router",task:"Local / State / CDC",doneText:"\u2713 3 \u2192 State HD"}],
+    cases: [{id:"RPT-001",ingestLine:"Source: ER Intake | Marcus T., 34M | ZIP 02101 | GI illness onset 48hrs",displayFields:[{v:"ER Intake",s:"font-weight:bold;color:#555"},{v:"Marcus T., 34M"},{v:"ZIP: 02101"},{v:"Nausea, vomiting, diarrhea \u2014 48hrs"},{v:"Community dinner, 40 guests"}]},
+{id:"RPT-002",ingestLine:"Source: School Nurse | Westfield Elementary | ZIP 02101 | 12 GI absences",displayFields:[{v:"School Nurse",s:"font-weight:bold;color:#555"},{v:"Westfield Elementary"},{v:"ZIP: 02101"},{v:"12 student GI absences in 2 days"},{v:"Shared cafeteria + water source"}]},
+{id:"RPT-003",ingestLine:"Source: Urgent Care | Rosa G., 28F | ZIP 02134 | Respiratory onset 3 days",displayFields:[{v:"Urgent Care",s:"font-weight:bold;color:#555"},{v:"Rosa G., 28F"},{v:"ZIP: 02134"},{v:"Fever 102.4, dry cough, SOB"},{v:"Community center, 200+ weekly"}]},
+{id:"RPT-004",ingestLine:"Source: ER Intake | Ahmad H., 45M | ZIP 02101 | GI illness onset 36hrs",displayFields:[{v:"ER Intake",s:"font-weight:bold;color:#555"},{v:"Ahmad H., 45M"},{v:"ZIP: 02101"},{v:"GI illness, cramping \u2014 36hrs"},{v:"Same community dinner as RPT-001"}]},
+{id:"RPT-005",ingestLine:"Source: Telehealth | Priya S., 52F | ZIP 02134 | Respiratory + fever 4 days",displayFields:[{v:"Telehealth",s:"font-weight:bold;color:#555"},{v:"Priya S., 52F"},{v:"ZIP: 02134"},{v:"Fever, fatigue, respiratory \u2014 4 days"},{v:"Community center aerobics class"}]}],
+    results: [{id:"RPT-001",cardClass:"fail",badgeText:"HIGH \u2014 State HD",badgeClass:"high",a1cls:"lw",a1line:"CLUSTER: RPT-001 links to RPT-002 + RPT-004 \u2014 ZIP 02101, community dinner exposure",a2cls:"lf",a2line:"RPT-001: HIGH RISK \u2014 multiple GI cases, confirmed shared exposure, rapid onset",a3line:"RPT-001: \"Suspected foodborne outbreak ZIP 02101 \u2014 community dinner, 3 confirmed cases\" \u2014 queued for Epi review",a4cls:"lf",a4line:"RPT-001 \u2192 State HD | Rule: multi-case cluster with confirmed shared exposure",resultFields:[{v:"Cluster: \u2713 ZIP 02101 dinner"},{v:"Risk: HIGH",s:"color:#c0392b;font-weight:bold"},{v:"\u2192 State HD"},{v:"Rule: 3+ cases, shared exposure"}]},
+{id:"RPT-002",cardClass:"fail",badgeText:"HIGH \u2014 State HD",badgeClass:"high",a1cls:"lw",a1line:"CLUSTER: RPT-002 in ZIP 02101 cluster \u2014 school + community dinner cases linked geographically",a2cls:"lf",a2line:"RPT-002: HIGH RISK \u2014 institutional setting, ongoing exposure, vulnerable pediatric population",a3line:"RPT-002: \"School GI cluster ZIP 02101 \u2014 cafeteria/water source investigation required\" \u2014 queued for Epi review",a4cls:"lf",a4line:"RPT-002 \u2192 State HD | Rule: institutional cluster with potential ongoing exposure",resultFields:[{v:"Cluster: \u2713 ZIP 02101 school"},{v:"Risk: HIGH",s:"color:#c0392b;font-weight:bold"},{v:"\u2192 State HD"},{v:"Rule: institutional cluster"}]},
+{id:"RPT-003",cardClass:"hold",badgeText:"MEDIUM \u2014 Local HD",badgeClass:"medium",a1cls:"lw",a1line:"CLUSTER: RPT-003 links to RPT-005 \u2014 ZIP 02134, community center, respiratory profile (distinct from ZIP 02101)",a2cls:"lw",a2line:"RPT-003: MEDIUM RISK \u2014 respiratory cluster, different profile from ZIP 02101, smaller case count",a3line:"RPT-003: \"Respiratory illness cluster ZIP 02134 \u2014 community center exposure, separate investigation\" \u2014 queued for Epi review",a4cls:"lw",a4line:"RPT-003 \u2192 Local HD | Rule: 2-case respiratory cluster, distinct profile, local investigation first",resultFields:[{v:"Cluster: \u2713 ZIP 02134 resp."},{v:"Risk: MEDIUM",s:"color:#a16207;font-weight:bold"},{v:"\u2192 Local HD"},{v:"Rule: small distinct cluster"}]},
+{id:"RPT-004",cardClass:"fail",badgeText:"HIGH \u2014 State HD",badgeClass:"high",a1cls:"lw",a1line:"CLUSTER: RPT-004 confirms ZIP 02101 foodborne cluster \u2014 third case, same dinner exposure as RPT-001",a2cls:"lf",a2line:"RPT-004: HIGH RISK \u2014 third confirmed case, shared exposure confirmed, outbreak designation warranted",a3line:"RPT-004: \"Third confirmed case ZIP 02101 community dinner \u2014 outbreak designation recommended\" \u2014 queued for Epi review",a4cls:"lf",a4line:"RPT-004 \u2192 State HD | Rule: third case confirms outbreak \u2014 state notification required by statute",resultFields:[{v:"Cluster: \u2713 Confirms outbreak"},{v:"Risk: HIGH",s:"color:#c0392b;font-weight:bold"},{v:"\u2192 State HD"},{v:"Rule: 3rd case = outbreak"}]},
+{id:"RPT-005",cardClass:"hold",badgeText:"MEDIUM \u2014 Local HD",badgeClass:"medium",a1cls:"lw",a1line:"CLUSTER: RPT-005 links to RPT-003 \u2014 ZIP 02134 respiratory cluster, aerobics class",a2cls:"lw",a2line:"RPT-005: MEDIUM RISK \u2014 second respiratory case same venue, community center ongoing exposure possible",a3line:"RPT-005: \"Second respiratory case ZIP 02134 \u2014 community center aerobics class investigation\" \u2014 queued for Epi review",a4cls:"lw",a4line:"RPT-005 \u2192 Local HD | Rule: two-case respiratory cluster, monitor for third case",resultFields:[{v:"Cluster: \u2713 ZIP 02134 resp."},{v:"Risk: MEDIUM",s:"color:#a16207;font-weight:bold"},{v:"\u2192 Local HD"},{v:"Rule: 2-case, monitor"}]}]
+  },
+  "sdoh": {
+    agents: [{icon:"\ud83d\uddc4\ufe0f",name:"Data-Aggregator",task:"Census + claims + BRFSS",doneText:"\u2713 5 tracts loaded"},{icon:"\ud83d\udcc8",name:"SDOH-Scorer",task:"Composite vulnerability index",doneText:"\u2713 5 scored"},{icon:"\u2696\ufe0f",name:"Disparity-Detector",task:"vs. city baseline",doneText:"\u2713 4 disparities flagged"},{icon:"\ud83c\udfe5",name:"Intervention-Planner",task:"CHW / mobile / telehealth",doneText:"\u2713 5 plans drafted"},{icon:"\ud83d\udccd",name:"Resource-Router",task:"Matches programs to tracts",doneText:"\u2713 3 HIGH priority"}],
+    cases: [{id:"TRACT-A",ingestLine:"Roxbury ZIP 02119 | Poverty 31% | Uninsured 18% | ED util 340/1000",displayFields:[{v:"Roxbury, ZIP 02119",s:"font-weight:bold;color:#555"},{v:"Poverty rate: 31%"},{v:"Uninsured: 18%"},{v:"Food desert: Yes"},{v:"ED util: 340/1000/yr"}]},
+{id:"TRACT-B",ingestLine:"Back Bay ZIP 02116 | Poverty 4% | Uninsured 5% | ED util 82/1000",displayFields:[{v:"Back Bay, ZIP 02116",s:"font-weight:bold;color:#555"},{v:"Poverty rate: 4%"},{v:"Uninsured: 5%"},{v:"Food desert: No"},{v:"ED util: 82/1000/yr"}]},
+{id:"TRACT-C",ingestLine:"Dorchester ZIP 02122 | Poverty 22% | Uninsured 14% | ED util 210/1000",displayFields:[{v:"Dorchester, ZIP 02122",s:"font-weight:bold;color:#555"},{v:"Poverty rate: 22%"},{v:"Uninsured: 14%"},{v:"Food desert: Partial"},{v:"ED util: 210/1000/yr"}]},
+{id:"TRACT-D",ingestLine:"East Boston ZIP 02128 | Poverty 26% | Uninsured 21% | Spanish 48%",displayFields:[{v:"East Boston, ZIP 02128",s:"font-weight:bold;color:#555"},{v:"Poverty rate: 26%"},{v:"Uninsured: 21%"},{v:"Food desert: No"},{v:"Primary lang: Spanish 48%"}]},
+{id:"TRACT-E",ingestLine:"Mattapan ZIP 02126 | Poverty 28% | Housing instability 34% | ED 290/1000",displayFields:[{v:"Mattapan, ZIP 02126",s:"font-weight:bold;color:#555"},{v:"Poverty rate: 28%"},{v:"Uninsured: 16%"},{v:"Housing instability: 34%"},{v:"ED util: 290/1000/yr"}]}],
+    results: [{id:"TRACT-A",cardClass:"fail",badgeText:"HIGH \u2014 CHW + Mobile Clinic",badgeClass:"high",a1cls:"lf",a1line:"TRACT-A: SDOH Score 72/100 \u2014 4th highest composite vulnerability in city",a2cls:"lf",a2line:"TRACT-A: DISPARITY \u2014 ED utilization 4.1x city average (340 vs 82/1000). Food desert + high uninsured compound risk.",a3line:"TRACT-A: Intervention \u2192 Community Health Worker deployment + mobile clinic biweekly \u2014 targets ED diversion",a4cls:"lf",a4line:"TRACT-A \u2192 HIGH PRIORITY | Matched: CHW program (3 available), Mobile Health Unit schedule, Federally Qualified Health Center referral pathway",resultFields:[{v:"SDOH Score: 72/100",s:"font-weight:bold"},{v:"Disparity: 4.1x city avg ED"},{v:"Intervention: CHW + Mobile Clinic",s:"color:#c0392b"},{v:"Priority: HIGH"}]},
+{id:"TRACT-B",cardClass:"pass",badgeText:"LOW \u2014 Monitor",badgeClass:"low",a1cls:"lp",a1line:"TRACT-B: SDOH Score 12/100 \u2014 lowest composite vulnerability in analysis",a2cls:"lp",a2line:"TRACT-B: NO SIGNIFICANT DISPARITY \u2014 indicators at or below city average across all domains",a3line:"TRACT-B: Intervention \u2192 Standard primary care access, no targeted program needed at this time",a4cls:"lp",a4line:"TRACT-B \u2192 MONITOR ONLY | No resource allocation required. Quarterly data refresh.",resultFields:[{v:"SDOH Score: 12/100",s:"font-weight:bold"},{v:"Disparity: None detected"},{v:"Intervention: Monitor only",s:"color:#3a7d44"},{v:"Priority: LOW"}]},
+{id:"TRACT-C",cardClass:"hold",badgeText:"MEDIUM \u2014 Food + Telehealth",badgeClass:"medium",a1cls:"lw",a1line:"TRACT-C: SDOH Score 58/100 \u2014 moderate composite vulnerability, food access is primary driver",a2cls:"lw",a2line:"TRACT-C: DISPARITY \u2014 uninsured rate 2.8x city average. Partial food desert increases chronic disease burden.",a3line:"TRACT-C: Intervention \u2192 Food access program (SNAP enrollment support) + telehealth expansion for primary care access",a4cls:"lw",a4line:"TRACT-C \u2192 MEDIUM PRIORITY | Matched: SNAP outreach team, telehealth navigator program",resultFields:[{v:"SDOH Score: 58/100",s:"font-weight:bold"},{v:"Disparity: Uninsured 2.8x avg"},{v:"Intervention: Food + Telehealth",s:"color:#a16207"},{v:"Priority: MEDIUM"}]},
+{id:"TRACT-D",cardClass:"fail",badgeText:"HIGH \u2014 Language + CHW",badgeClass:"high",a1cls:"lf",a1line:"TRACT-D: SDOH Score 64/100 \u2014 language barrier amplifies all other SDOH factors",a2cls:"lf",a2line:"TRACT-D: DISPARITY \u2014 uninsured rate 4.2x city average. 48% Spanish-speaking population has limited access to English-only services.",a3line:"TRACT-D: Intervention \u2192 Bilingual CHW deployment + language-concordant care navigation + insurance enrollment support",a4cls:"lf",a4line:"TRACT-D \u2192 HIGH PRIORITY | Matched: Bilingual CHW cohort, MassHealth enrollment navigators, translation services",resultFields:[{v:"SDOH Score: 64/100",s:"font-weight:bold"},{v:"Disparity: Uninsured 4.2x + language"},{v:"Intervention: Bilingual CHW",s:"color:#c0392b"},{v:"Priority: HIGH"}]},
+{id:"TRACT-E",cardClass:"fail",badgeText:"HIGH \u2014 Housing + Complex",badgeClass:"high",a1cls:"lf",a1line:"TRACT-E: SDOH Score 68/100 \u2014 housing instability at 34% is highest single-factor driver",a2cls:"lf",a2line:"TRACT-E: DISPARITY \u2014 ED utilization 3.5x city average. Housing instability drives acute care utilization in absence of stable housing.",a3line:"TRACT-E: Intervention \u2192 Housing stability program referral + complex care management + CHW with social work co-deployment",a4cls:"lf",a4line:"TRACT-E \u2192 HIGH PRIORITY | Matched: Housing Navigator program, Complex Care Team, CHW + MSW dyad",resultFields:[{v:"SDOH Score: 68/100",s:"font-weight:bold"},{v:"Disparity: Housing + ED 3.5x"},{v:"Intervention: Complex care",s:"color:#c0392b"},{v:"Priority: HIGH"}]}]
+  },
+  "vacc": {
+    agents: [{icon:"\ud83d\udccb",name:"Registry-Puller",task:"IZ database extraction",doneText:"\u2713 5 segments pulled"},{icon:"\ud83d\udcc9",name:"Gap-Identifier",task:"Actual vs. target coverage",doneText:"\u2713 5 gaps quantified"},{icon:"\ud83d\udd34",name:"Risk-Stratifier",task:"Critical / Moderate / Monitor",doneText:"\u2713 4 critical flagged"},{icon:"\u2709\ufe0f",name:"Outreach-Drafter",task:"Tailored segment message",doneText:"\u2713 5 messages drafted"},{icon:"\ud83d\udce3",name:"Campaign-Router",task:"Channel + timeline",doneText:"\u2713 5 routed"}],
+    cases: [{id:"SEG-001",ingestLine:"Children 0-2 ZIP 02121 | MMR actual 62% | Target 95% | Gap 33pts",displayFields:[{v:"Children 0\u20132, ZIP 02121",s:"font-weight:bold;color:#555"},{v:"Vaccine: MMR"},{v:"Actual coverage: 62%"},{v:"Target: 95%"},{v:"Gap: 33 percentage points"}]},
+{id:"SEG-002",ingestLine:"Adults 65+ ZIP 02130 | Influenza actual 78% | Target 85% | Gap 7pts",displayFields:[{v:"Adults 65+, ZIP 02130",s:"font-weight:bold;color:#555"},{v:"Vaccine: Influenza"},{v:"Actual coverage: 78%"},{v:"Target: 85%"},{v:"Gap: 7 percentage points"}]},
+{id:"SEG-003",ingestLine:"Adolescents 11-17 ZIP 02122 | HPV series actual 54% | Target 80% | Gap 26pts",displayFields:[{v:"Adolescents 11\u201317, ZIP 02122",s:"font-weight:bold;color:#555"},{v:"Vaccine: HPV series"},{v:"Actual coverage: 54%"},{v:"Target: 80%"},{v:"Gap: 26 percentage points"}]},
+{id:"SEG-004",ingestLine:"Immunocompromised adults ZIP 02119 | Pneumococcal actual 45% | Target 90% | Gap 45pts",displayFields:[{v:"Immunocompromised adults, ZIP 02119",s:"font-weight:bold;color:#555"},{v:"Vaccine: Pneumococcal"},{v:"Actual coverage: 45%"},{v:"Target: 90%"},{v:"Gap: 45 percentage points"}]},
+{id:"SEG-005",ingestLine:"Pregnant women ZIP 02124 | Tdap actual 67% | Target 95% | Gap 28pts",displayFields:[{v:"Pregnant women, ZIP 02124",s:"font-weight:bold;color:#555"},{v:"Vaccine: Tdap"},{v:"Actual coverage: 67%"},{v:"Target: 95%"},{v:"Gap: 28 percentage points"}]}],
+    results: [{id:"SEG-001",cardClass:"fail",badgeText:"CRITICAL \u2014 33pt gap",badgeClass:"critical",a1cls:"lf",a1line:"SEG-001: Gap 33pts \u2014 MMR coverage 62% vs 95% target. Herd immunity threshold not met.",a2cls:"lf",a2line:"SEG-001: CRITICAL \u2014 children under 2 with incomplete MMR in non-immune-naive population. Measles outbreak risk.",a3line:"SEG-001: Outreach \u2192 Pediatric provider alert + WIC integration + parent SMS reminder series. Plain language, English + Spanish.",a4cls:"lf",a4line:"SEG-001 \u2192 IMMEDIATE | Channel: Pediatric provider EHR alert + WIC site staff briefing. Timeline: 2 weeks.",resultFields:[{v:"Gap: 33pts (62%\u219295%)",s:"font-weight:bold;color:#c0392b"},{v:"Risk: Measles outbreak"},{v:"Channel: Ped provider + WIC"},{v:"Timeline: 2 weeks"}]},
+{id:"SEG-002",cardClass:"hold",badgeText:"MODERATE \u2014 7pt gap",badgeClass:"medium",a1cls:"lw",a1line:"SEG-002: Gap 7pts \u2014 Influenza coverage 78% vs 85% target. Within manageable range.",a2cls:"lw",a2line:"SEG-002: MODERATE \u2014 elderly population with elevated flu risk, but gap is within seasonal campaign reach.",a3line:"SEG-002: Outreach \u2192 Standard flu season reminder letter + pharmacy voucher program.",a4cls:"lw",a4line:"SEG-002 \u2192 ROUTINE | Channel: Mailed reminder + pharmacy partnership. Timeline: Start of flu season.",resultFields:[{v:"Gap: 7pts (78%\u219285%)",s:"font-weight:bold;color:#a16207"},{v:"Risk: Elevated flu severity"},{v:"Channel: Mail + pharmacy"},{v:"Timeline: Flu season start"}]},
+{id:"SEG-003",cardClass:"fail",badgeText:"CRITICAL \u2014 26pt gap",badgeClass:"critical",a1cls:"lf",a1line:"SEG-003: Gap 26pts \u2014 HPV series completion 54% vs 80% target. Multi-dose series compounds dropout risk.",a2cls:"lf",a2line:"SEG-003: CRITICAL \u2014 HPV coverage gap in adolescents represents preventable cancer burden in 20-30 years.",a3line:"SEG-003: Outreach \u2192 School-based vaccination clinic + parent communication (address vaccine hesitancy framing).",a4cls:"lf",a4line:"SEG-003 \u2192 IMMEDIATE | Channel: School nurse coordination + parent letter + provider reminder at well-visits. Timeline: 3 weeks.",resultFields:[{v:"Gap: 26pts (54%\u219280%)",s:"font-weight:bold;color:#c0392b"},{v:"Risk: Future cancer burden"},{v:"Channel: School + provider"},{v:"Timeline: 3 weeks"}]},
+{id:"SEG-004",cardClass:"fail",badgeText:"CRITICAL \u2014 45pt gap",badgeClass:"critical",a1cls:"lf",a1line:"SEG-004: Gap 45pts \u2014 Pneumococcal coverage 45% vs 90% target. Highest absolute gap in analysis.",a2cls:"lf",a2line:"SEG-004: CRITICAL \u2014 immunocompromised adults face 20-40x higher pneumococcal mortality risk. This gap is a patient safety issue.",a3line:"SEG-004: Outreach \u2192 Direct provider alert to oncology + rheumatology + infectious disease + patient navigator outreach.",a4cls:"lf",a4line:"SEG-004 \u2192 URGENT | Channel: Specialty provider EHR alert + patient navigator direct call. Timeline: 1 week.",resultFields:[{v:"Gap: 45pts (45%\u219290%)",s:"font-weight:bold;color:#c0392b"},{v:"Risk: HIGH mortality (20-40x)"},{v:"Channel: Specialty provider + navigator"},{v:"Timeline: 1 week"}]},
+{id:"SEG-005",cardClass:"fail",badgeText:"CRITICAL \u2014 28pt gap",badgeClass:"critical",a1cls:"lf",a1line:"SEG-005: Gap 28pts \u2014 Tdap coverage 67% vs 95% target in pregnant women. Pertussis risk to newborns.",a2cls:"lf",a2line:"SEG-005: CRITICAL \u2014 Tdap gap in pregnant women exposes newborns to pertussis before they can be vaccinated at 2 months.",a3line:"SEG-005: Outreach \u2192 OB/GYN provider alert + prenatal visit integration + WIC prenatal program.",a4cls:"lf",a4line:"SEG-005 \u2192 IMMEDIATE | Channel: OB provider EHR prompt + prenatal visit standing order recommendation. Timeline: 2 weeks.",resultFields:[{v:"Gap: 28pts (67%\u219295%)",s:"font-weight:bold;color:#c0392b"},{v:"Risk: Neonatal pertussis"},{v:"Channel: OB provider + prenatal"},{v:"Timeline: 2 weeks"}]}]
+  },
+};
+
+
+function switchTab(panelId){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+panelId).classList.add('active');
+  document.getElementById('panel-'+panelId).classList.add('active');
+}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+function setAg(pid,idx,state,text){
+  document.getElementById('ag-'+pid+'-'+idx).className='ag '+state;
+  document.getElementById('as-'+pid+'-'+idx).innerHTML=text;
+}
+function logLine(pid,cls,txt){
+  const el=document.getElementById('audit-'+pid);
+  const t=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const d=document.createElement('div');
+  d.innerHTML='<span class="t">['+t+']</span> <span class="'+cls+'">'+txt+'</span>';
+  if(el.querySelector('span[style]'))el.innerHTML='';
+  el.appendChild(d);el.scrollTop=el.scrollHeight;
+}
+async function runPipeline(pid, SCENARIO){
+  document.getElementById('btn-'+pid).disabled=true;
+  document.getElementById('results-'+pid).style.display='none';
+  document.getElementById('audit-'+pid).innerHTML='';
+  renderCases(pid, SCENARIO.cases, null);
+  for(let i=0;i<5;i++) setAg(pid,i,'','waiting');
+
+  // Agent 0 — instant (no AI needed)
+  setAg(pid,0,'running','<span class="spin">⟳</span> processing...');
+  await sleep(350);
+  logLine(pid,'ls','══ '+SCENARIO.agents[0].name.toUpperCase()+' ══');
+  for(const c of SCENARIO.cases){
+    logLine(pid,'la','['+SCENARIO.agents[0].name+'] '+c.ingestLine);
+    await sleep(90);
+  }
+  setAg(pid,0,'done','✓ 5 ingested');
+
+  // Agents 1-4 — batch
+  await sleep(250);
+  for(let i=1;i<5;i++) setAg(pid,i,'running','<span class="spin">⟳</span>...');
+  logLine(pid,'ls','══ AI ANALYSIS — BATCH ══');
+  logLine(pid,'la','[System] Processing through '+SCENARIO.agents.slice(1).map(a=>a.name).join(' + ')+'...');
+  await sleep(800);
+
+  const results = SCENARIO.results;
+
+  // Agent 1 audit
+  logLine(pid,'ls','══ '+SCENARIO.agents[1].name.toUpperCase()+' ══');
+  for(let i=0;i<results.length;i++){
+    logLine(pid, results[i].a1cls, '['+SCENARIO.agents[1].name+'] '+results[i].a1line);
+    await sleep(90);
+  }
+  setAg(pid,1,'done',SCENARIO.agents[1].doneText);
+
+  // Agent 2 audit
+  await sleep(120);
+  logLine(pid,'ls','══ '+SCENARIO.agents[2].name.toUpperCase()+' ══');
+  for(let i=0;i<results.length;i++){
+    logLine(pid, results[i].a2cls, '['+SCENARIO.agents[2].name+'] '+results[i].a2line);
+    await sleep(90);
+  }
+  setAg(pid,2,'done',SCENARIO.agents[2].doneText);
+
+  // Agent 3 audit
+  await sleep(120);
+  logLine(pid,'ls','══ '+SCENARIO.agents[3].name.toUpperCase()+' ══');
+  for(let i=0;i<results.length;i++){
+    logLine(pid,'la','['+SCENARIO.agents[3].name+'] '+results[i].a3line);
+    await sleep(90);
+  }
+  setAg(pid,3,'done',SCENARIO.agents[3].doneText);
+
+  // Agent 4 audit
+  await sleep(120);
+  logLine(pid,'ls','══ '+SCENARIO.agents[4].name.toUpperCase()+' ══');
+  for(let i=0;i<results.length;i++){
+    logLine(pid, results[i].a4cls, '['+SCENARIO.agents[4].name+'] '+results[i].a4line);
+    await sleep(90);
+  }
+  setAg(pid,4,'done',SCENARIO.agents[4].doneText);
+
+  renderCases(pid, SCENARIO.cases, results);
+  renderResults(pid, SCENARIO, results);
+
+  document.getElementById('btn-'+pid).disabled=false;
+  document.getElementById('btn-'+pid).textContent='↺ Run Again';
+}
+
+function renderCases(pid, cases, results){
+  document.getElementById('cases-'+pid).innerHTML = cases.map((c,i)=>{
+    const r = results ? results[i] : null;
+    const cc = r ? r.cardClass : '';
+    const bt = r ? r.badgeText : 'PENDING';
+    const bc = r ? r.badgeClass : '';
+    return '<div class="card '+cc+'"><div class="cn">'+c.id+'</div>'
+      + c.displayFields.map(f=>'<div class="cf"'+(f.s?' style="'+f.s+'"':'')+'>'+f.v+'</div>').join('')
+      + '<span class="badge '+bc+'">'+bt+'</span></div>';
+  }).join('');
+}
+
+function renderResults(pid, SCENARIO, results){
+  document.getElementById('res-grid-'+pid).innerHTML = results.map(r=>
+    '<div class="card '+r.cardClass+'"><div class="cn">'+r.id+'</div>'
+    + r.resultFields.map(f=>'<div class="cf"'+(f.s?' style="'+f.s+'"':'')+'>'+f.v+'</div>').join('')
+    + '</div>'
+  ).join('');
+  document.getElementById('results-'+pid).style.display='block';
+  document.getElementById('results-'+pid).scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// Activate first tab
+document.getElementById('tab-surv').classList.add('active');
+document.getElementById('panel-surv').classList.add('active');
+// Init all case grids
+Object.keys(SCENARIOS).forEach(pid => renderCases(pid, SCENARIOS[pid].cases, null));
+</script>
+</body>
+</html>
