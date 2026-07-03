@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Meridian Incident — Executive Leadership Simulation</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ink: #0d0d0d;
+  --ink2: #3a3a3a;
+  --ink3: #777;
+  --rule: #e0ddd6;
+  --paper: #faf9f6;
+  --warn: #b91c1c;
+  --warn-bg: #fef2f2;
+  --amber: #92400e;
+  --amber-bg: #fffbeb;
+  --green: #166534;
+  --green-bg: #f0fdf4;
+  --blue: #1e3a5f;
+  --blue-bg: #eff6ff;
+  --accent: #1e3a5f;
+}
+
+body {
+  font-family: 'Georgia', serif;
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* ── INCIDENT BANNER ── */
+.incident-banner {
+  background: var(--warn);
+  color: white;
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+}
+.incident-status { display: flex; align-items: center; gap: 10px; }
+.pulse { width: 8px; height: 8px; background: white; border-radius: 50%; animation: pulse 1.4s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.incident-time { color: rgba(255,255,255,0.7); }
+
+/* ── AUDIENCE SELECTOR ── */
+.audience-bar {
+  background: var(--ink);
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow-x: auto;
+}
+.audience-label {
+  font-family: monospace;
+  font-size: 0.62rem;
+  color: #666;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding-right: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.aud-btn {
+  background: none;
+  border: none;
+  color: #666;
+  font-family: 'Georgia', serif;
+  font-size: 0.78rem;
+  padding: 14px 18px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.aud-btn:hover { color: #ccc; }
+.aud-btn.active { color: white; border-bottom-color: #b91c1c; }
+
+/* ── PROGRESS ── */
+.progress-bar {
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.prog-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: monospace;
+  font-size: 0.62rem;
+  color: var(--ink3);
+  letter-spacing: 0.05em;
+}
+.prog-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--rule);
+  border: 1.5px solid var(--rule);
+  flex-shrink: 0;
+}
+.prog-dot.active { background: var(--warn); border-color: var(--warn); }
+.prog-dot.done { background: var(--ink); border-color: var(--ink); }
+.prog-line { flex: 1; height: 1px; background: var(--rule); max-width: 40px; }
+.prog-line.done { background: var(--ink); }
+
+/* ── MAIN LAYOUT ── */
+.main { max-width: 780px; margin: 0 auto; padding: 40px 24px 80px; }
+
+/* ── BRIEFING ── */
+.briefing-eyebrow {
+  font-family: monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--warn);
+  margin-bottom: 8px;
+}
+.briefing-title {
+  font-size: 1.9rem;
+  font-weight: normal;
+  line-height: 1.2;
+  margin-bottom: 4px;
+  letter-spacing: -0.02em;
+}
+.briefing-sub {
+  font-size: 0.82rem;
+  color: var(--ink3);
+  font-family: monospace;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--rule);
+}
+.role-card {
+  background: var(--blue-bg);
+  border-left: 3px solid var(--blue);
+  padding: 14px 18px;
+  margin-bottom: 28px;
+  font-size: 0.85rem;
+}
+.role-card strong { color: var(--blue); display: block; font-size: 0.7rem; font-family: monospace; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+.memo {
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 28px;
+}
+.memo-header {
+  background: var(--ink);
+  color: white;
+  padding: 10px 18px;
+  font-family: monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.memo-body { padding: 20px 18px; font-size: 0.88rem; }
+.memo-row { display: flex; gap: 16px; margin-bottom: 8px; }
+.memo-key { font-family: monospace; font-size: 0.68rem; color: var(--ink3); min-width: 80px; padding-top: 2px; }
+.memo-val { flex: 1; }
+.memo-divider { border: none; border-top: 1px solid var(--rule); margin: 14px 0; }
+.memo-section { font-family: monospace; font-size: 0.65rem; letter-spacing: 0.08em; color: var(--ink3); text-transform: uppercase; margin-bottom: 8px; margin-top: 16px; }
+.memo-para { margin-bottom: 10px; font-size: 0.87rem; }
+.fact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0; }
+.fact-box {
+  border: 1px solid var(--rule);
+  padding: 12px 14px;
+  font-size: 0.8rem;
+}
+.fact-box .fact-agent { font-family: monospace; font-size: 0.6rem; color: var(--ink3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+.fact-box .fact-role { font-weight: bold; margin-bottom: 4px; }
+.fact-box .fact-detail { color: var(--ink2); font-size: 0.78rem; }
+.warn-box {
+  background: var(--warn-bg);
+  border: 1px solid #fca5a5;
+  padding: 14px 16px;
+  margin: 16px 0;
+  font-size: 0.84rem;
+}
+.warn-box strong { color: var(--warn); }
+
+/* ── DECISION ── */
+.decision-phase {
+  font-family: monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  color: var(--ink3);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.decision-clock {
+  font-size: 2rem;
+  font-weight: normal;
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+  color: var(--warn);
+}
+.decision-title {
+  font-size: 1.3rem;
+  font-weight: normal;
+  margin-bottom: 16px;
+}
+.decision-context {
+  font-size: 0.88rem;
+  color: var(--ink2);
+  margin-bottom: 8px;
+  padding: 16px;
+  background: var(--amber-bg);
+  border-left: 3px solid #d97706;
+  line-height: 1.65;
+}
+.audience-frame {
+  font-size: 0.82rem;
+  color: var(--blue);
+  margin-bottom: 24px;
+  padding: 12px 14px;
+  border: 1px solid #bfdbfe;
+  border-radius: 2px;
+  font-style: italic;
+}
+.decision-question {
+  font-size: 1rem;
+  margin-bottom: 20px;
+  padding-top: 8px;
+  border-top: 1px solid var(--rule);
+}
+.options { display: flex; flex-direction: column; gap: 10px; }
+.opt-btn {
+  background: white;
+  border: 1.5px solid var(--rule);
+  padding: 16px 18px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'Georgia', serif;
+}
+.opt-btn:hover { border-color: var(--ink); background: var(--paper); }
+.opt-btn.selected { border-color: var(--ink); background: var(--ink); color: white; }
+.opt-label {
+  font-family: monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  color: var(--ink3);
+  margin-bottom: 4px;
+}
+.opt-btn.selected .opt-label { color: #aaa; }
+.opt-title { font-size: 0.9rem; font-weight: bold; margin-bottom: 3px; }
+.opt-detail { font-size: 0.78rem; color: var(--ink2); }
+.opt-btn.selected .opt-detail { color: #ccc; }
+
+/* ── CONSEQUENCE ── */
+.consequence-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--rule);
+}
+.chosen-badge {
+  background: var(--ink);
+  color: white;
+  font-family: monospace;
+  font-size: 0.6rem;
+  padding: 4px 8px;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  margin-top: 4px;
+}
+.chosen-text { font-size: 0.88rem; font-style: italic; color: var(--ink2); }
+.consequence-body {
+  font-size: 0.88rem;
+  line-height: 1.75;
+  color: var(--ink2);
+}
+.consequence-body p { margin-bottom: 14px; }
+.consequence-section {
+  font-family: monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  color: var(--ink3);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  margin-top: 20px;
+}
+.consequence-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink3);
+  font-family: monospace;
+  font-size: 0.78rem;
+  padding: 24px 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner { display: inline-block; animation: spin 0.8s linear infinite; font-size: 1rem; }
+
+/* ── SCORECARD ── */
+.scorecard-title {
+  font-size: 1.6rem;
+  font-weight: normal;
+  margin-bottom: 4px;
+  letter-spacing: -0.02em;
+}
+.profile-badge {
+  display: inline-block;
+  padding: 6px 14px;
+  border: 1.5px solid var(--ink);
+  font-family: monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 14px 0 24px;
+}
+.score-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 28px; }
+.score-card {
+  border: 1px solid var(--rule);
+  padding: 14px 16px;
+}
+.score-dimension {
+  font-family: monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink3);
+  margin-bottom: 6px;
+}
+.score-bar-wrap { background: var(--rule); height: 6px; border-radius: 0; margin-bottom: 6px; }
+.score-bar { height: 6px; background: var(--ink); transition: width 1s ease; }
+.score-bar.low { background: var(--warn); }
+.score-bar.mid { background: #d97706; }
+.score-bar.high { background: var(--green); }
+.score-num { font-size: 1.4rem; font-weight: normal; }
+.score-max { font-size: 0.72rem; color: var(--ink3); font-family: monospace; }
+.decision-log { margin-bottom: 24px; }
+.log-entry {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 0.82rem;
+}
+.log-phase { font-family: monospace; font-size: 0.62rem; color: var(--ink3); min-width: 70px; padding-top: 2px; }
+.log-choice { flex: 1; }
+.log-choice strong { display: block; margin-bottom: 2px; }
+.log-choice span { color: var(--ink3); font-size: 0.76rem; }
+.insight-box {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  padding: 20px;
+  margin-bottom: 20px;
+  font-size: 0.85rem;
+  line-height: 1.7;
+}
+.insight-box h4 { font-size: 0.7rem; font-family: monospace; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink3); margin-bottom: 10px; }
+
+/* ── NAV ── */
+.nav-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid var(--rule);
+}
+.btn-primary {
+  background: var(--ink);
+  color: white;
+  border: none;
+  padding: 12px 28px;
+  font-family: 'Georgia', serif;
+  font-size: 0.88rem;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: background 0.15s;
+}
+.btn-primary:hover { background: #333; }
+.btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+.btn-ghost {
+  background: none;
+  color: var(--ink3);
+  border: 1px solid var(--rule);
+  padding: 12px 20px;
+  font-family: 'Georgia', serif;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+.btn-ghost:hover { border-color: var(--ink); color: var(--ink); }
+.phase-hidden { display: none; }
+</style>
+</head>
+<body>
+
+<!-- INCIDENT BANNER -->
+<div class="incident-banner">
+  <div class="incident-status">
+    <div class="pulse"></div>
+    <span>ACTIVE INCIDENT — MERIDIAN MEDICAL CENTER</span>
+  </div>
+  <div class="incident-time" id="live-time"></div>
+</div>
+
+<!-- AUDIENCE SELECTOR -->
+<div class="audience-bar">
+  <div class="audience-label">Your role:</div>
+  <button class="aud-btn active" onclick="setAudience('ceo')">Hospital C-Suite</button>
+  <button class="aud-btn" onclick="setAudience('academic')">Academic Leader</button>
+  <button class="aud-btn" onclick="setAudience('pubhealth')">Public Health Leader</button>
+  <button class="aud-btn" onclick="setAudience('board')">Board & Vendor</button>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-bar">
+  <div class="prog-step"><div class="prog-dot active" id="pd0"></div><span>Briefing</span></div>
+  <div class="prog-line" id="pl0"></div>
+  <div class="prog-step"><div class="prog-dot" id="pd1"></div><span>Decision 1</span></div>
+  <div class="prog-line" id="pl1"></div>
+  <div class="prog-step"><div class="prog-dot" id="pd2"></div><span>Decision 2</span></div>
+  <div class="prog-line" id="pl2"></div>
+  <div class="prog-step"><div class="prog-dot" id="pd3"></div><span>Decision 3</span></div>
+  <div class="prog-line" id="pl3"></div>
+  <div class="prog-step"><div class="prog-dot" id="pd4"></div><span>Scorecard</span></div>
+</div>
+
+<div class="main">
+
+<!-- ══════════════════════════════
+     PHASE 0: BRIEFING
+════════════════════════════════ -->
+<div id="phase-0">
+  <div class="briefing-eyebrow">Incident Briefing — Confidential</div>
+  <div class="briefing-title">The Meridian Incident</div>
+  <div class="briefing-sub">Thursday, 6:14 AM · Meridian Medical Center · Executive Simulation</div>
+
+  <div class="role-card" id="role-card">
+    <strong>Your Role</strong>
+    <span id="role-text">You are the CEO of Meridian Medical Center, a 400-bed regional health system. Your CMO just called you at home.</span>
+  </div>
+
+  <div class="memo">
+    <div class="memo-header">Incident Summary — Prepared by CMO Office</div>
+    <div class="memo-body">
+      <div class="memo-row"><div class="memo-key">Patient</div><div class="memo-val">Marcus Webb, 71M. Admitted Wednesday 8pm with acute confusion and hypotension.</div></div>
+      <div class="memo-row"><div class="memo-key">Status</div><div class="memo-val"><strong>Critical but stable.</strong> Currently in MICU following a serious bleeding event overnight.</div></div>
+      <div class="memo-row"><div class="memo-key">Event</div><div class="memo-val">Mr. Webb received warfarin 7.5mg — three times his prescribed dose of 2.5mg. Bleeding event occurred approximately 2am.</div></div>
+      <hr class="memo-divider">
+      <div class="memo-section">Three AI Systems Were Involved</div>
+      <div class="fact-grid">
+        <div class="fact-box">
+          <div class="fact-agent">System 1 — ScribeAI</div>
+          <div class="fact-role">Clinical Documentation</div>
+          <div class="fact-detail">Generated Mr. Webb's admission note containing an attribution error — warfarin 7.5mg carried from a prior patient's chart. The attending signed the note. The error was not caught.</div>
+        </div>
+        <div class="fact-box">
+          <div class="fact-agent">System 2 — AuthBot</div>
+          <div class="fact-role">Prior Authorization</div>
+          <div class="fact-detail">Three weeks ago, predicted low approval likelihood for Mr. Webb's anticoagulation monitoring request. The appeal was delayed. His INR had not been checked in 5 weeks at admission.</div>
+        </div>
+        <div class="fact-box">
+          <div class="fact-agent">System 3 — StaffIQ</div>
+          <div class="fact-role">Workforce Optimization</div>
+          <div class="fact-detail">Deployed a float nurse to cover the unit overnight, flagging it as appropriately staffed. The float nurse had limited experience with anticoagulation protocols on this unit.</div>
+        </div>
+        <div class="fact-box">
+          <div class="fact-agent">Human Factor</div>
+          <div class="fact-role">Attending Physician</div>
+          <div class="fact-detail">Signed the ScribeAI-generated note without catching the warfarin dosage error. The note appeared complete and structurally correct.</div>
+        </div>
+      </div>
+      <hr class="memo-divider">
+      <div class="memo-section">What You Know and Don't Know</div>
+      <div class="memo-para">You know: three AI systems contributed to this event. You know: the attending signed the note. You know: Mr. Webb is stable. You know: his family is in the waiting room and has not been told about the medication error.</div>
+      <div class="memo-para">You don't know: whether the bleeding event was directly caused by the warfarin overdose or other factors. You don't know: whether the AI vendors were aware of these failure modes. You don't know: whether this has happened before.</div>
+      <div class="warn-box">
+        <strong>This is not primarily a technology failure.</strong> Every AI system performed within its design parameters. ScribeAI generated a syntactically correct note. AuthBot followed payer policy. StaffIQ optimized ratios. The failure is in how the systems were deployed, supervised, and integrated — and who was accountable for their outputs.
+      </div>
+      <div class="memo-section">You Have Three Decisions to Make</div>
+      <div class="memo-para">The next eight hours will define how Meridian, your institution, and the field responds to this event. Each decision carries consequences. There are no perfect answers — only defensible ones.</div>
+    </div>
+  </div>
+
+  <div class="nav-row">
+    <div style="font-size:0.78rem;color:var(--ink3);font-family:monospace;">Read carefully. You cannot return to the briefing once you begin.</div>
+    <button class="btn-primary" onclick="goToPhase(1)">Begin Simulation →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     PHASE 1: DECISION 1
+════════════════════════════════ -->
+<div id="phase-1" class="phase-hidden">
+  <div class="decision-phase">Decision 1 of 3</div>
+  <div class="decision-clock">6:14 AM</div>
+  <div class="decision-title">The First Hour</div>
+
+  <div class="decision-context">
+    Your CMO has just briefed you. Mr. Webb's family is in the waiting room. The attending physician is still on the unit. Your Risk Management Director is reachable. The AI vendor account manager's number is in your phone. You have approximately 45 minutes before the 7am operational huddle, at which 12 senior leaders will expect you to say something.
+  </div>
+
+  <div class="audience-frame" id="d1-frame">
+    As CEO: This is your first consequential decision. Who you call first signals to the entire organization what you value most.
+  </div>
+
+  <div class="decision-question">Who do you call first — and what is your posture going into that call?</div>
+
+  <div class="options" id="d1-options">
+    <button class="opt-btn" onclick="selectOption(1,'A')">
+      <div class="opt-label">Option A</div>
+      <div class="opt-title">Risk Management and Legal</div>
+      <div class="opt-detail">Understand your legal exposure before making any other moves. Protect the institution. No statements, no admissions until you know what you're dealing with.</div>
+    </button>
+    <button class="opt-btn" onclick="selectOption(1,'B')">
+      <div class="opt-label">Option B</div>
+      <div class="opt-title">The Attending Physician</div>
+      <div class="opt-detail">Understand what happened from the person closest to it before anything else. Build a factual picture. You cannot make good decisions without knowing what the attending knows.</div>
+    </button>
+    <button class="opt-btn" onclick="selectOption(1,'C')">
+      <div class="opt-label">Option C</div>
+      <div class="opt-title">Mr. Webb's Family</div>
+      <div class="opt-detail">Patient and family first — always. They are in the waiting room. They do not know about the medication error. Every minute they don't know is a minute of trust you cannot recover.</div>
+    </button>
+    <button class="opt-btn" onclick="selectOption(1,'D')">
+      <div class="opt-label">Option D</div>
+      <div class="opt-title">The AI Vendor</div>
+      <div class="opt-detail">You need to understand the system's role before you can say anything to anyone. If the vendor's technology caused this, that changes everything — liability, narrative, next steps.</div>
+    </button>
+  </div>
+
+  <div class="nav-row">
+    <button class="btn-ghost" onclick="goToPhase(0)">← Back to Briefing</button>
+    <button class="btn-primary" id="d1-next" disabled onclick="goToConsequence(1)">See Consequences →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     PHASE 1b: CONSEQUENCE 1
+════════════════════════════════ -->
+<div id="phase-1b" class="phase-hidden">
+  <div class="decision-phase">Consequence — Decision 1</div>
+  <div class="decision-title">What Happened Next</div>
+  <div class="consequence-header">
+    <div>
+      <div class="chosen-badge">YOU CHOSE</div>
+    </div>
+    <div class="chosen-text" id="c1-chosen"></div>
+  </div>
+  <div id="c1-loading" class="consequence-loading"><span class="spinner">⟳</span> Generating consequences...</div>
+  <div id="c1-body" class="consequence-body" style="display:none"></div>
+  <div class="nav-row">
+    <div></div>
+    <button class="btn-primary" id="c1-next" onclick="goToPhase(2)">Decision 2 →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     PHASE 2: DECISION 2
+════════════════════════════════ -->
+<div id="phase-2" class="phase-hidden">
+  <div class="decision-phase">Decision 2 of 3</div>
+  <div class="decision-clock">9:07 AM</div>
+  <div class="decision-title">The Media Call</div>
+
+  <div class="decision-context">
+    A reporter from the regional paper calls your direct line. She says: "We've heard a patient at Meridian was seriously harmed overnight and that artificial intelligence was involved. We're running a story this afternoon. Do you have a comment?" You have 90 seconds to decide how to respond before the silence becomes its own answer.
+  </div>
+
+  <div class="audience-frame" id="d2-frame">
+    As CEO: Whatever you say — or don't say — will be in print by 4pm. Your Board Chair will read it before you can brief them.
+  </div>
+
+  <div class="decision-question">What do you say to the reporter?</div>
+
+  <div class="options" id="d2-options">
+    <button class="opt-btn" onclick="selectOption(2,'A')">
+      <div class="opt-label">Option A</div>
+      <div class="opt-title">"We cannot comment on individual patient cases."</div>
+      <div class="opt-detail">Standard deflection. HIPAA gives you cover. Say nothing until you have legal clearance and a prepared statement.</div>
+    </button>
+    <button class="opt-btn" onclick="selectOption(2,'B')">
+      <div class="opt-label">Option B</div>
+      <div class="opt-title">Acknowledge the event, confirm a review is underway.</div>
+      <div class="opt-detail">"We are aware of a serious patient safety event and have launched a full investigation. AI systems are part of that review. Patient safety is our first priority."</div>
+    </button>
+    <button class="opt-btn" onclick="selectOption(2,'C')">
+      <div class="opt-label">Option C</div>
+      <div class="opt-title">Full transparency — share what you know so far.</div>
+      <div class="opt-detail">Tell the reporter the facts as you understand them: a patient received an incorrect medication dose, three AI systems were involved, the investigation is active, and you will share findings publicly.</div>
+    </button>
+    <button class="opt-btn" onclick="selectOption(2,'D')">
+      <div class="opt-label">Option D</div>
+      <div class="opt-title">"AI was not the primary cause of this event."</div>
+      <div class="opt-detail">Redirect focus to the human factors — the attending signed the note, the float nurse administered the medication. AI is being reviewed but is not the headline.</div>
+    </button>
+  </div>
+
+  <div class="nav-row">
+    <div></div>
+    <button class="btn-primary" id="d2-next" disabled onclick="goToConsequence(2)">See Consequences →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     PHASE 2b: CONSEQUENCE 2
+════════════════════════════════ -->
+<div id="phase-2b" class="phase-hidden">
+  <div class="decision-phase">Consequence — Decision 2</div>
+  <div class="decision-title">What Happened Next</div>
+  <div class="consequence-header">
+    <div><div class="chosen-badge">YOU CHOSE</div></div>
+    <div class="chosen-text" id="c2-chosen"></div>
+  </div>
+  <div id="c2-loading" class="consequence-loading"><span class="spinner">⟳</span> Generating consequences...</div>
+  <div id="c2-body" class="consequence-body" style="display:none"></div>
+  <div class="nav-row">
+    <div></div>
+    <button class="btn-primary" id="c2-next" onclick="goToPhase(3)">Decision 3 →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     PHASE 3: DECISION 3
+════════════════════════════════ -->
+<div id="phase-3" class="phase-hidden">
+  <div class="decision-phase">Decision 3 of 3</div>
+  <div class="decision-clock">2:00 PM</div>
+  <div class="decision-title">The Board Meeting</div>
+
+  <div class="decision-context">
+    You are presenting to the full Board of Directors. They have seen the media coverage. Three board members have called you personally. The Board Chair opened the meeting by saying: "We need to know what happened, what we're doing about it, and whether we are safe to continue operating these systems." You have 10 minutes to present your recommendation on the three AI systems.
+  </div>
+
+  <div class="audience-frame" id="d3-frame">
+    As CEO: This recommendation will set the tone for how Meridian is perceived — by the board, by staff, by the field, and by future patients. It will also set a precedent for how your organization governs AI going forward.
+  </div>
+
+  <div class="decision-question">What do you recommend to the board about the three AI systems?</div>
+
+  <div class="options" id="d3-options">
+    <button class="opt-btn" onclick="selectOption(3,'A')">
+      <div class="opt-label">Option A</div>
+      <div class="opt-title">Pause all three systems immediately.</div>
+      <div class="opt-detail">No AI-assisted documentation, authorization, or staffing until a full independent review is complete. Operational disruption is the cost of doing this right.</div>
+    </button>
+    <button class="opt-btn" onclick="selectOption(3,'B')">
+      <div class="opt-label">Option B</div>
+      <div class="opt-title">Pause ScribeAI only.</div>
+      <div class="opt-detail">The documentation error is the most direct link to patient harm. Pause it pending review. AuthBot and StaffIQ continue under enhanced monitoring — their connection to the event is more distal.</div>
+    </button>
+    <button class="opt-btn" onclick="selectOption(3,'C')">
+      <div class="opt-label">Option C</div>
+      <div class="opt-title">Continue all three systems with new oversight protocols.</div>
+      <div class="opt-detail">Pausing creates patient safety risks of its own — documentation backlogs, staffing gaps, authorization delays. Strengthen human review requirements. Don't create new harm while investigating old harm.</div>
+    </button>
+    <button class="opt-btn" onclick="selectOption(3,'D')">
+      <div class="opt-label">Option D</div>
+      <div class="opt-title">Commission an independent 30-day external review before any changes.</div>
+      <div class="opt-detail">Internal decisions made under pressure will lack credibility. An independent review gives the board, regulators, and the public a defensible process. Systems continue with heightened monitoring during the review.</div>
+    </button>
+  </div>
+
+  <div class="nav-row">
+    <div></div>
+    <button class="btn-primary" id="d3-next" disabled onclick="goToConsequence(3)">See Consequences →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     PHASE 3b: CONSEQUENCE 3
+════════════════════════════════ -->
+<div id="phase-3b" class="phase-hidden">
+  <div class="decision-phase">Consequence — Decision 3</div>
+  <div class="decision-title">What Happened Next</div>
+  <div class="consequence-header">
+    <div><div class="chosen-badge">YOU CHOSE</div></div>
+    <div class="chosen-text" id="c3-chosen"></div>
+  </div>
+  <div id="c3-loading" class="consequence-loading"><span class="spinner">⟳</span> Generating consequences...</div>
+  <div id="c3-body" class="consequence-body" style="display:none"></div>
+  <div class="nav-row">
+    <div></div>
+    <button class="btn-primary" id="c3-next" onclick="goToScorecard()">View Governance Scorecard →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     PHASE 4: SCORECARD
+════════════════════════════════ -->
+<div id="phase-4" class="phase-hidden">
+  <div class="briefing-eyebrow">Governance Scorecard</div>
+  <div class="scorecard-title">Your Leadership Profile</div>
+  <div class="profile-badge" id="profile-badge">—</div>
+  <div class="profile-desc" id="profile-desc" style="font-size:0.88rem;margin-bottom:24px;color:var(--ink2);line-height:1.65;"></div>
+
+  <div class="score-grid" id="score-grid"></div>
+
+  <div class="decision-log" id="decision-log">
+    <div style="font-family:monospace;font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink3);margin-bottom:12px;">Your Decision Log</div>
+  </div>
+
+  <div class="insight-box" id="governing-insight">
+    <h4>The Governance Insight</h4>
+    <div id="insight-text"></div>
+  </div>
+
+  <div class="nav-row">
+    <button class="btn-ghost" onclick="restart()">↺ Run Again with Different Choices</button>
+    <div style="font-size:0.75rem;color:var(--ink3);font-family:monospace;">© 2026 Dr. Dipu Patel · ReasonFirst</div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════
+// STATE
+// ══════════════════════════════
+let audience = 'ceo';
+let currentPhase = 0;
+let choices = {};
+let consequences = {};
+let scores = { accountability: 0, transparency: 0, strategy: 0, trust: 0 };
+
+// ══════════════════════════════
+// AUDIENCE CONFIGURATIONS
+// ══════════════════════════════
+const AUDIENCES = {
+  ceo: {
+    label: 'Hospital C-Suite',
+    role: 'You are the CEO of Meridian Medical Center, a 400-bed regional health system. Your CMO just called you at home.',
+    d1: 'As CEO: This is your first consequential decision. Who you call first signals to the entire organization what you value most.',
+    d2: 'As CEO: Whatever you say — or don\'t say — will be in print by 4pm. Your Board Chair will read it before you can brief them.',
+    d3: 'As CEO: This recommendation will define how Meridian governs AI going forward. It will also be cited by every health system watching this case.',
+  },
+  academic: {
+    label: 'Academic Leader',
+    role: 'You are the Dean of a health professions school. Your program has a clinical partnership with Meridian — your students rotate there, and your program uses the same ScribeAI system for documentation training.',
+    d1: 'As Dean: Your students are in that building. Your institution uses the same technology. Your first call carries institutional and educational consequences.',
+    d2: 'As Dean: Your program\'s use of ScribeAI is now part of this story whether you want it to be or not. A reporter may call you next.',
+    d3: 'As Dean: Your faculty will ask whether to continue ScribeAI training. Your students are watching how leadership responds to AI failure in a real clinical setting.',
+  },
+  pubhealth: {
+    label: 'Public Health Leader',
+    role: 'You are the State Health Officer. Your department uses a similar AI-assisted surveillance pipeline. Last month you flagged a near-miss in your own system. The Meridian event is now public.',
+    d1: 'As State Health Officer: You have jurisdiction over patient safety reporting. You also have a political obligation to be transparent with the public about AI in healthcare.',
+    d2: 'As State Health Officer: The governor\'s office will call before the reporter\'s story runs. Your answer shapes the state\'s policy posture on healthcare AI.',
+    d3: 'As State Health Officer: You can\'t regulate Meridian directly — but your public response will influence how every health system in the state approaches AI governance.',
+  },
+  board: {
+    label: 'Board & Vendor',
+    role: 'You are either a Meridian Board member receiving this briefing before the 2pm meeting — or the CEO of the AI vendor whose ScribeAI system is at the center of this event.',
+    d1: 'As Board/Vendor: You are not the CEO of Meridian. But you have obligations — fiduciary, ethical, and legal — that your first action must reflect.',
+    d2: 'As Board/Vendor: Your name and your company\'s name may appear in this story. How you engage with that reality defines your credibility going forward.',
+    d3: 'As Board/Vendor: You don\'t make the call — but you influence it. What do you advocate for in that board room, and why?',
+  }
+};
+
+// ══════════════════════════════
+// SCORING
+// ══════════════════════════════
+const SCORE_MAP = {
+  1: {
+    A: { accountability: -1, transparency: -1, strategy: 1, trust: -1 },
+    B: { accountability: 2, transparency: 1, strategy: 2, trust: 1 },
+    C: { accountability: 2, transparency: 2, strategy: 0, trust: 2 },
+    D: { accountability: -2, transparency: -2, strategy: -1, trust: -2 },
+  },
+  2: {
+    A: { accountability: -1, transparency: -2, strategy: 0, trust: -1 },
+    B: { accountability: 1, transparency: 2, strategy: 1, trust: 1 },
+    C: { accountability: 2, transparency: 2, strategy: -1, trust: 2 },
+    D: { accountability: -2, transparency: -3, strategy: -1, trust: -3 },
+  },
+  3: {
+    A: { accountability: 2, transparency: 1, strategy: -1, trust: 1 },
+    B: { accountability: 1, transparency: 1, strategy: 1, trust: 0 },
+    C: { accountability: -1, transparency: 0, strategy: 2, trust: -1 },
+    D: { accountability: 1, transparency: 1, strategy: 2, trust: 1 },
+  }
+};
+
+const OPTION_LABELS = {
+  1: { A: 'Called Risk Management and Legal first', B: 'Called the Attending Physician first', C: 'Called Mr. Webb\'s Family first', D: 'Called the AI Vendor first' },
+  2: { A: 'Declined to comment — HIPAA cover', B: 'Acknowledged event, confirmed review underway', C: 'Full transparency — shared known facts', D: 'Redirected focus away from AI involvement' },
+  3: { A: 'Paused all three AI systems immediately', B: 'Paused ScribeAI only', C: 'Continued all systems with new oversight protocols', D: 'Commissioned independent 30-day external review' }
+};
+
+// ══════════════════════════════
+// PHASE NAVIGATION
+// ══════════════════════════════
+function goToPhase(n) {
+  document.querySelectorAll('[id^="phase-"]').forEach(el => el.classList.add('phase-hidden'));
+  document.getElementById('phase-' + n).classList.remove('phase-hidden');
+  currentPhase = n;
+  updateProgress(n);
+  window.scrollTo(0, 0);
+}
+
+function updateProgress(phase) {
+  const map = { 0: 0, 1: 1, '1b': 1, 2: 2, '2b': 2, 3: 3, '3b': 3, 4: 4 };
+  const active = typeof phase === 'number' ? phase : parseInt(phase);
+  for (let i = 0; i <= 4; i++) {
+    const dot = document.getElementById('pd' + i);
+    const line = document.getElementById('pl' + i);
+    if (dot) {
+      dot.className = 'prog-dot' + (i < active ? ' done' : i === active ? ' active' : '');
+    }
+    if (line) {
+      line.className = 'prog-line' + (i < active ? ' done' : '');
+    }
+  }
+}
+
+// ══════════════════════════════
+// OPTION SELECTION
+// ══════════════════════════════
+function selectOption(decision, option) {
+  choices[decision] = option;
+  const container = document.getElementById('d' + decision + '-options');
+  container.querySelectorAll('.opt-btn').forEach((btn, i) => {
+    btn.classList.toggle('selected', ['A','B','C','D'][i] === option);
+  });
+  const nextBtn = document.getElementById('d' + decision + '-next');
+  if (nextBtn) nextBtn.disabled = false;
+}
+
+// ══════════════════════════════
+// CONSEQUENCE GENERATION
+// ══════════════════════════════
+async function goToConsequence(decision) {
+  const phaseId = 'phase-' + decision + 'b';
+  document.querySelectorAll('[id^="phase-"]').forEach(el => el.classList.add('phase-hidden'));
+  document.getElementById(phaseId).classList.remove('phase-hidden');
+  window.scrollTo(0, 0);
+
+  // Update score
+  const impact = SCORE_MAP[decision][choices[decision]];
+  Object.keys(impact).forEach(k => scores[k] += impact[k]);
+
+  // Show chosen label
+  const chosenEl = document.getElementById('c' + decision + '-chosen');
+  chosenEl.textContent = OPTION_LABELS[decision][choices[decision]];
+
+  // Generate consequence
+  const loadEl = document.getElementById('c' + decision + '-loading');
+  const bodyEl = document.getElementById('c' + decision + '-body');
+  loadEl.style.display = 'flex';
+  bodyEl.style.display = 'none';
+
+  const audConfig = AUDIENCES[audience];
+  const priorDecisions = Object.keys(choices).filter(d => parseInt(d) < decision).map(d =>
+    `Decision ${d}: ${OPTION_LABELS[d][choices[d]]}`
+  ).join('; ');
+
+  const prompt = `You are a governance educator running an executive leadership simulation about healthcare AI. A senior healthcare leader just made a decision in a crisis scenario.
+
+SCENARIO: At Meridian Medical Center, a patient (Marcus Webb, 71M) received a warfarin overdose (7.5mg instead of 2.5mg). Three AI systems were involved: ScribeAI (generated a note with an attribution error), AuthBot (delayed anticoagulation monitoring authorization), StaffIQ (deployed an inexperienced float nurse). The attending signed the ScribeAI note without catching the error.
+
+LEADER ROLE: ${audConfig.role}
+
+PRIOR DECISIONS: ${priorDecisions || 'This is their first decision.'}
+
+DECISION ${decision} - THEY CHOSE: ${OPTION_LABELS[decision][choices[decision]]}
+
+Generate a consequence narrative in three clearly labeled sections:
+
+IMMEDIATE (next 2 hours): What concretely happened as a result of this choice. Be specific — name who said what, what was discovered, what pressure emerged. 2-3 sentences.
+
+30 DAYS OUT: What downstream organizational, reputational, or systemic consequence flowed from this choice. Be honest about both the benefits and costs of their decision. 2-3 sentences.
+
+GOVERNANCE SIGNAL: What does this choice reveal about this leader's governance instinct? Name the underlying value or assumption driving the decision — and what a governance expert would say about it. 2-3 sentences. This should be the most intellectually honest section — not congratulatory if they chose well, not punishing if they chose poorly, but genuinely analytical.
+
+Write in plain prose. No bullet points. No headers beyond the three section labels. Keep each section focused and specific to THIS decision in THIS scenario.`;
+
+  let consequenceText = '';
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 600,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await resp.json();
+    consequenceText = data.content[0].text;
+    consequences[decision] = consequenceText;
+  } catch(e) {
+    consequenceText = getFallbackConsequence(decision, choices[decision]);
+    consequences[decision] = consequenceText;
+  }
+
+  loadEl.style.display = 'none';
+  bodyEl.style.display = 'block';
+  bodyEl.innerHTML = formatConsequence(consequenceText);
+}
+
+function formatConsequence(text) {
+  const sections = ['IMMEDIATE', '30 DAYS OUT', 'GOVERNANCE SIGNAL'];
+  let html = '';
+  sections.forEach(s => {
+    const idx = text.indexOf(s + ':');
+    if (idx !== -1) {
+      const next = sections.find(s2 => s2 !== s && text.indexOf(s2 + ':') > idx);
+      const end = next ? text.indexOf(next + ':') : text.length;
+      const content = text.slice(idx + s.length + 1, end).trim();
+      html += `<div class="consequence-section">${s}</div><p>${content}</p>`;
+    }
+  });
+  return html || `<p>${text}</p>`;
+}
+
+function getFallbackConsequence(decision, option) {
+  const fallbacks = {
+    '1A': 'IMMEDIATE: Legal counsel arrived within the hour. They advised no contact with the family pending a full chart review and legal assessment. You spent the first 90 minutes in a conference room instead of the hospital floor.\n\n30 DAYS OUT: The family later told a journalist they felt "stonewalled" in those first hours. Patient relations became the primary liability rather than the clinical event itself.\n\nGOVERNANCE SIGNAL: This choice prioritizes institutional protection over patient-centered accountability. A governance expert would note that it treats the family as a legal risk rather than as stakeholders who deserve truth — and that delay in family communication is consistently the most cited driver of healthcare litigation.',
+    '1B': 'IMMEDIATE: The attending was forthcoming. Within 20 minutes you understood the ScribeAI note appeared complete — nothing visually flagged the error. The attending had signed 40 notes in the prior 8 hours.\n\n30 DAYS OUT: Your early conversation with the attending shaped the investigation\'s framing: this was a system failure, not an individual one. That framing held up under scrutiny and influenced how the case was reported.\n\nGOVERNANCE SIGNAL: This choice prioritizes understanding before action. A governance expert would call it sound — knowing the facts before making statements or promises is the foundation of credible leadership. The risk is the family waited longer for direct contact.',
+    '1C': 'IMMEDIATE: The family was told within the hour. They were devastated but grateful for the directness. Mr. Webb\'s daughter asked three questions you could not yet answer. You told her so.\n\n30 DAYS OUT: The family\'s subsequent public statements were notable for what they did not say — they did not accuse the hospital of hiding information. Their attorney later confirmed the early conversation significantly shaped their approach.\n\nGOVERNANCE SIGNAL: This choice puts human accountability ahead of institutional protection. A governance expert would flag the operational risk — you spoke before you had full facts — but would also note that research on disclosure consistently shows early honest communication reduces both litigation and lasting institutional damage.',
+    '1D': 'IMMEDIATE: The vendor account manager had no answers. You spent 30 minutes on a call that produced a promise to escalate to their engineering team. By the time you hung up, two board members had already called your CMO.\n\n30 DAYS OUT: When the investigation report surfaced, the vendor call appeared in the timeline. It read as if the hospital\'s first instinct was to find someone else to blame. That framing was difficult to escape.\n\nGOVERNANCE SIGNAL: This choice reflects a governance instinct to externalize accountability. It assumes the vendor\'s technical explanation will change what you need to do — and it won\'t. A governance expert would say: the vendor is accountable for the technology; you are accountable for how you deployed, supervised, and integrated it.',
+    '2A': 'IMMEDIATE: The story ran with the line: "Meridian Medical Center declined to comment." Four paragraphs later, the reporter quoted two anonymous staff members who did.\n\n30 DAYS OUT: The HIPAA deflection, while legally sound, was widely interpreted as institutional cover. Three investigative follow-up stories appeared over the next three weeks.\n\nGOVERNANCE SIGNAL: This is the most common choice and the most consistently counterproductive one. A governance expert would note that "no comment" is itself a statement — it tells the public that the institution\'s legal exposure matters more than their right to know.',
+    '2B': 'IMMEDIATE: The reporter ran the quote accurately. The story\'s headline focused on the investigation rather than the harm. Your board chair called to say it was "appropriate and measured."\n\n30 DAYS OUT: You established early credibility as a leader willing to acknowledge reality. When the investigation findings were released, they matched your initial framing — no surprises, no contradiction.\n\nGOVERNANCE SIGNAL: This is the governance middle ground — honest enough to be credible, measured enough to be defensible. A governance expert would call it sound, while noting that "measured" can shade into "managed" if the subsequent investigation is not genuinely transparent.',
+    '2C': 'IMMEDIATE: The story ran prominently, with your direct quotes. Your legal team called it "unnecessary exposure." Your CMO called it "the right thing to do."\n\n30 DAYS OUT: Your candor was cited in subsequent coverage as unusual for a health system. Two patient advocacy organizations publicly commended it. Your insurer had a different view.\n\nGOVERNANCE SIGNAL: Full early transparency carries legal risk and builds social trust simultaneously. A governance expert would say this choice is rare and genuinely principled — and that the long-term reputational benefit typically outweighs the short-term legal exposure, though that is not guaranteed.',
+    '2D': 'IMMEDIATE: The reporter quoted you directly: "AI was not the primary cause." By 6pm, three AI governance researchers had publicly disputed that framing on social media.\n\n30 DAYS OUT: The story evolved from "medication error" to "health system downplays AI role in patient harm." Regulators requested documentation.\n\nGOVERNANCE SIGNAL: This choice attempts to control the narrative by redirecting blame — and it failed because the facts didn\'t support it. A governance expert would identify this as a fundamental governance error: never make a causal claim you cannot yet substantiate, especially when the systems involved are already under public scrutiny.',
+    '3A': 'IMMEDIATE: All three systems went offline at 3pm. Documentation shifted to manual. Staffing decisions reverted to the charge nurse. Authorization requests stacked up.\n\n30 DAYS OUT: The operational disruption was significant but manageable. More importantly, staff reported feeling that leadership had taken the event seriously. The board described the decision as "decisive."\n\nGOVERNANCE SIGNAL: A full pause is the most conservative and most publicly defensible choice. A governance expert would note that it treats all three systems as equally suspect — which may not be accurate — and that the disruption costs are real. But it sends an unambiguous signal about organizational priorities.',
+    '3B': 'IMMEDIATE: ScribeAI went offline at 3pm. AuthBot and StaffIQ continued. The operational disruption was contained. The attending documentation team worked overtime.\n\n30 DAYS OUT: The decision was criticized by one board member for being too narrow — "we only paused the system that got caught." The other two systems\' continued operation was noted in the regulatory review.\n\nGOVERNANCE SIGNAL: This is a proportionality argument — pause what is most directly connected, continue what is more distal. A governance expert would call it defensible but incomplete. The three systems are interconnected in this event; treating them as independent misunderstands the cascade failure.',
+    '3C': 'IMMEDIATE: All three systems continued. New protocols were announced: mandatory human double-check on all AI-generated medication documentation, weekly staffing audits, and real-time authorization monitoring.\n\n30 DAYS OUT: One protocol compliance audit showed 34% of the documentation checks were being completed in under 10 seconds — indicating rubber-stamping rather than genuine review. The protocols existed; the behavior change did not.\n\nGOVERNANCE SIGNAL: This choice prioritizes operational continuity over demonstrable accountability. A governance expert would raise the core problem with "enhanced oversight" responses: the oversight only works if humans have the time, training, and organizational permission to actually use it — none of which this decision addresses.',
+    '3D': 'IMMEDIATE: The board accepted the recommendation. An external firm was retained within 48 hours. Systems continued under documented heightened monitoring with daily reporting to the CMO.\n\n30 DAYS OUT: The external review released a preliminary report at day 21. It was credible, independent, and cited widely. It also identified two additional near-misses in the prior six months that internal review had not surfaced.\n\nGOVERNANCE SIGNAL: This is the most strategically sophisticated choice — it creates distance between the decision and the decision-maker, builds external credibility, and surfaces information internal review might miss. A governance expert would flag the risk: "independent review" is only as valuable as the independence is real.'
+  };
+  return fallbacks[decision + option] || 'IMMEDIATE: The decision was made and the day continued.\n\n30 DAYS OUT: The consequences became clearer over time.\n\nGOVERNANCE SIGNAL: Every decision in a crisis reveals something about the values underlying leadership.';
+}
+
+// ══════════════════════════════
+// SCORECARD
+// ══════════════════════════════
+function goToScorecard() {
+  goToPhase(4);
+
+  // Profile
+  const total = Object.values(scores).reduce((a,b) => a+b, 0);
+  let profile, profileDesc;
+  if (total >= 12) {
+    profile = 'Principled Governor';
+    profileDesc = 'Your decisions consistently prioritized accountability and transparency over institutional protection. You treated the family, the public, and the board as stakeholders who deserved honesty — even when that was operationally costly. A governance expert would describe this as the hardest posture to maintain under pressure and the one most likely to produce durable institutional trust.';
+  } else if (total >= 6) {
+    profile = 'Strategic Navigator';
+    profileDesc = 'Your decisions balanced institutional protection with transparency, making pragmatic choices under time pressure. You were neither fully protective nor fully transparent — you managed the crisis. A governance expert would note that crisis management and crisis governance are different skills, and that navigation without a clear ethical north star can drift toward self-protection as pressure increases.';
+  } else if (total >= 0) {
+    profile = 'Risk Manager';
+    profileDesc = 'Your decisions prioritized institutional protection and operational continuity. Legal, reputational, and financial risk drove your calculus more than patient or community trust. A governance expert would say this posture is common, understandable — and that it tends to produce the long-term outcomes it was designed to prevent.';
+  } else {
+    profile = 'Crisis Reactor';
+    profileDesc = 'Your decisions were driven primarily by immediate pressure — the first call, the reporter\'s deadline, the board\'s anxiety. A governance expert would note that reactive decision-making in a values vacuum tends to create a second crisis (of credibility) on top of the first one (of patient safety). The most useful question now is: what values do you want driving the next decision before the next crisis arrives?';
+  }
+
+  document.getElementById('profile-badge').textContent = profile;
+  document.getElementById('profile-desc').textContent = profileDesc;
+
+  // Score bars
+  const dims = [
+    { key: 'accountability', label: 'Accountability', max: 7 },
+    { key: 'transparency', label: 'Transparency', max: 7 },
+    { key: 'strategy', label: 'Strategic Soundness', max: 5 },
+    { key: 'trust', label: 'Trust Preservation', max: 6 },
+  ];
+  const grid = document.getElementById('score-grid');
+  grid.innerHTML = dims.map(d => {
+    const raw = scores[d.key];
+    const normalized = Math.max(0, Math.min(100, ((raw + d.max) / (d.max * 2)) * 100));
+    const barClass = normalized >= 66 ? 'high' : normalized >= 33 ? 'mid' : 'low';
+    return `<div class="score-card">
+      <div class="score-dimension">${d.label}</div>
+      <div class="score-bar-wrap"><div class="score-bar ${barClass}" style="width:${normalized}%"></div></div>
+      <span class="score-num">${normalized >= 66 ? 'Strong' : normalized >= 33 ? 'Mixed' : 'Weak'}</span>
+    </div>`;
+  }).join('');
+
+  // Decision log
+  const log = document.getElementById('decision-log');
+  const phases = ['6:14 AM — First Hour', '9:07 AM — Media Call', '2:00 PM — Board Meeting'];
+  [1,2,3].forEach(d => {
+    if (choices[d]) {
+      const div = document.createElement('div');
+      div.className = 'log-entry';
+      div.innerHTML = `<div class="log-phase">${phases[d-1]}</div>
+        <div class="log-choice"><strong>${OPTION_LABELS[d][choices[d]]}</strong>
+        <span>Impact: Accountability ${SCORE_MAP[d][choices[d]].accountability >= 0 ? '+' : ''}${SCORE_MAP[d][choices[d]].accountability} · Transparency ${SCORE_MAP[d][choices[d]].transparency >= 0 ? '+' : ''}${SCORE_MAP[d][choices[d]].transparency} · Strategy ${SCORE_MAP[d][choices[d]].strategy >= 0 ? '+' : ''}${SCORE_MAP[d][choices[d]].strategy} · Trust ${SCORE_MAP[d][choices[d]].trust >= 0 ? '+' : ''}${SCORE_MAP[d][choices[d]].trust}</span>
+        </div>`;
+      log.appendChild(div);
+    }
+  });
+
+  // Governing insight
+  document.getElementById('insight-text').innerHTML = `This simulation is built around one observation: <strong>no AI system in the Meridian Incident did what it was not designed to do.</strong> ScribeAI generated a syntactically correct note. AuthBot followed payer policy. StaffIQ optimized a staffing ratio. Each system performed within its parameters. The failure was in governance — in how these systems were deployed, integrated, supervised, and made accountable.<br><br>The decisions you made today were not technology decisions. They were values decisions made in real time, under incomplete information, with consequences you could not fully predict. That is the permanent condition of governance. The question this simulation cannot answer for you — but that every leader must answer before the next incident — is: <em>what values do you want driving those decisions before the pressure arrives?</em>`;
+}
+
+// ══════════════════════════════
+// AUDIENCE SWITCHING
+// ══════════════════════════════
+function setAudience(aud) {
+  audience = aud;
+  document.querySelectorAll('.aud-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', ['ceo','academic','pubhealth','board'][i] === aud);
+  });
+  const cfg = AUDIENCES[aud];
+  document.getElementById('role-text').textContent = cfg.role;
+  document.getElementById('role-card').querySelector('strong').textContent = 'Your Role — ' + cfg.label;
+  if (document.getElementById('d1-frame')) document.getElementById('d1-frame').textContent = cfg.d1;
+  if (document.getElementById('d2-frame')) document.getElementById('d2-frame').textContent = cfg.d2;
+  if (document.getElementById('d3-frame')) document.getElementById('d3-frame').textContent = cfg.d3;
+}
+
+// ══════════════════════════════
+// RESTART
+// ══════════════════════════════
+function restart() {
+  choices = {};
+  consequences = {};
+  scores = { accountability: 0, transparency: 0, strategy: 0, trust: 0 };
+  document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll('[id$="-next"]').forEach(b => { if(b) b.disabled = true; });
+  document.getElementById('c1-body').style.display = 'none';
+  document.getElementById('c2-body').style.display = 'none';
+  document.getElementById('c3-body').style.display = 'none';
+  document.getElementById('c1-loading').style.display = 'flex';
+  document.getElementById('c2-loading').style.display = 'flex';
+  document.getElementById('c3-loading').style.display = 'flex';
+  document.getElementById('decision-log').innerHTML = '<div style="font-family:monospace;font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink3);margin-bottom:12px;">Your Decision Log</div>';
+  goToPhase(0);
+}
+
+// ══════════════════════════════
+// LIVE CLOCK
+// ══════════════════════════════
+function updateClock() {
+  const now = new Date();
+  document.getElementById('live-time').textContent = now.toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// Init
+setAudience('ceo');
+</script>
+</body>
+</html>

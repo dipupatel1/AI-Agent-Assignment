@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Safety Signal — Executive Leadership Simulation</title>
+<style>
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Georgia', serif; background: #faf9f6; color: #0d0d0d; min-height: 100vh; font-size: 15px; line-height: 1.6; }
+.incident-banner { color: white; padding: 10px 24px; display: flex; align-items: center; justify-content: space-between; font-family: monospace; font-size: 0.72rem; letter-spacing: 0.06em; }
+.incident-status { display: flex; align-items: center; gap: 10px; }
+.pulse { width: 8px; height: 8px; background: white; border-radius: 50%; animation: pulse 1.4s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.incident-time { color: rgba(255,255,255,0.7); }
+.audience-bar { background: #0d0d0d; padding: 0 24px; display: flex; align-items: center; gap: 0; overflow-x: auto; }
+.audience-label { font-family: monospace; font-size: 0.62rem; color: #666; letter-spacing: 0.08em; text-transform: uppercase; padding-right: 20px; white-space: nowrap; flex-shrink: 0; }
+.aud-btn { background: none; border: none; color: #666; font-family: 'Georgia', serif; font-size: 0.78rem; padding: 14px 18px; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.15s; }
+.aud-btn:hover { color: #ccc; }
+.progress-bar { padding: 12px 24px; border-bottom: 1px solid #e0ddd6; display: flex; align-items: center; gap: 8px; }
+.prog-step { display: flex; align-items: center; gap: 8px; font-family: monospace; font-size: 0.62rem; color: #777; letter-spacing: 0.05em; }
+.prog-dot { width: 8px; height: 8px; border-radius: 50%; background: #e0ddd6; border: 1.5px solid #e0ddd6; flex-shrink: 0; }
+.prog-dot.done { background: #0d0d0d; border-color: #0d0d0d; }
+.prog-line { flex: 1; height: 1px; background: #e0ddd6; max-width: 40px; }
+.prog-line.done { background: #0d0d0d; }
+.main { max-width: 780px; margin: 0 auto; padding: 40px 24px 80px; }
+.briefing-eyebrow { font-family: monospace; font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+.briefing-title { font-size: 1.9rem; font-weight: normal; line-height: 1.2; margin-bottom: 4px; letter-spacing: -0.02em; }
+.briefing-sub { font-size: 0.82rem; color: #777; font-family: monospace; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid #e0ddd6; }
+.role-card { padding: 14px 18px; margin-bottom: 28px; font-size: 0.85rem; }
+.role-card strong { display: block; font-size: 0.7rem; font-family: monospace; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+.memo { border: 1px solid #e0ddd6; border-radius: 2px; overflow: hidden; margin-bottom: 28px; }
+.memo-header { color: white; padding: 10px 18px; font-family: monospace; font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; }
+.memo-body { padding: 20px 18px; font-size: 0.88rem; }
+.memo-row { display: flex; gap: 16px; margin-bottom: 8px; }
+.memo-key { font-family: monospace; font-size: 0.68rem; color: #777; min-width: 90px; padding-top: 2px; }
+.memo-val { flex: 1; }
+.memo-divider { border: none; border-top: 1px solid #e0ddd6; margin: 14px 0; }
+.memo-section { font-family: monospace; font-size: 0.65rem; letter-spacing: 0.08em; color: #777; text-transform: uppercase; margin-bottom: 8px; margin-top: 16px; }
+.memo-para { margin-bottom: 10px; font-size: 0.87rem; }
+.fact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0; }
+.fact-box { border: 1px solid #e0ddd6; padding: 12px 14px; font-size: 0.8rem; }
+.fact-box .fact-agent { font-family: monospace; font-size: 0.6rem; color: #777; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+.fact-box .fact-role { font-weight: bold; margin-bottom: 4px; }
+.fact-box .fact-detail { color: #3a3a3a; font-size: 0.78rem; }
+.warn-box { border: 1px solid; padding: 14px 16px; margin: 16px 0; font-size: 0.84rem; }
+.decision-phase { font-family: monospace; font-size: 0.62rem; letter-spacing: 0.1em; color: #777; text-transform: uppercase; margin-bottom: 6px; }
+.decision-clock { font-size: 2rem; font-weight: normal; letter-spacing: -0.02em; margin-bottom: 4px; }
+.decision-title { font-size: 1.3rem; font-weight: normal; margin-bottom: 16px; }
+.decision-context { font-size: 0.88rem; color: #3a3a3a; margin-bottom: 8px; padding: 16px; border-left: 3px solid; line-height: 1.65; }
+.audience-frame { font-size: 0.82rem; margin-bottom: 24px; padding: 12px 14px; border: 1px solid; border-radius: 2px; font-style: italic; }
+.decision-question { font-size: 1rem; margin-bottom: 20px; padding-top: 8px; border-top: 1px solid #e0ddd6; }
+.options { display: flex; flex-direction: column; gap: 10px; }
+.opt-btn { background: white; border: 1.5px solid #e0ddd6; padding: 16px 18px; text-align: left; cursor: pointer; transition: all 0.15s; font-family: 'Georgia', serif; }
+.opt-btn:hover { border-color: #0d0d0d; background: #faf9f6; }
+.opt-btn.selected { border-color: #0d0d0d; background: #0d0d0d; color: white; }
+.opt-label { font-family: monospace; font-size: 0.62rem; letter-spacing: 0.08em; color: #777; margin-bottom: 4px; }
+.opt-btn.selected .opt-label { color: #aaa; }
+.opt-title { font-size: 0.9rem; font-weight: bold; margin-bottom: 3px; }
+.opt-detail { font-size: 0.78rem; color: #3a3a3a; }
+.opt-btn.selected .opt-detail { color: #ccc; }
+.consequence-header { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #e0ddd6; }
+.chosen-badge { background: #0d0d0d; color: white; font-family: monospace; font-size: 0.6rem; padding: 4px 8px; letter-spacing: 0.06em; white-space: nowrap; margin-top: 4px; }
+.chosen-text { font-size: 0.88rem; font-style: italic; color: #3a3a3a; }
+.consequence-body { font-size: 0.88rem; line-height: 1.75; color: #3a3a3a; }
+.consequence-body p { margin-bottom: 14px; }
+.consequence-section { font-family: monospace; font-size: 0.6rem; letter-spacing: 0.1em; color: #777; text-transform: uppercase; margin-bottom: 6px; margin-top: 20px; }
+.consequence-loading { display: flex; align-items: center; gap: 10px; color: #777; font-family: monospace; font-size: 0.78rem; padding: 24px 0; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner { display: inline-block; animation: spin 0.8s linear infinite; font-size: 1rem; }
+.scorecard-title { font-size: 1.6rem; font-weight: normal; margin-bottom: 4px; letter-spacing: -0.02em; }
+.profile-badge { display: inline-block; padding: 6px 14px; border: 1.5px solid #0d0d0d; font-family: monospace; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; margin: 14px 0 24px; }
+.score-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 28px; }
+.score-card { border: 1px solid #e0ddd6; padding: 14px 16px; }
+.score-dimension { font-family: monospace; font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: #777; margin-bottom: 6px; }
+.score-bar-wrap { background: #e0ddd6; height: 6px; margin-bottom: 6px; }
+.score-bar { height: 6px; transition: width 1s ease; }
+.score-bar.low { background: #b91c1c; }
+.score-bar.mid { background: #d97706; }
+.score-bar.high { background: #166534; }
+.score-num { font-size: 1.4rem; font-weight: normal; }
+.decision-log { margin-bottom: 24px; }
+.log-entry { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid #e0ddd6; font-size: 0.82rem; }
+.log-phase { font-family: monospace; font-size: 0.62rem; color: #777; min-width: 80px; padding-top: 2px; }
+.log-choice { flex: 1; }
+.log-choice strong { display: block; margin-bottom: 2px; }
+.log-choice span { color: #777; font-size: 0.76rem; }
+.insight-box { background: #faf9f6; border: 1px solid #e0ddd6; padding: 20px; margin-bottom: 20px; font-size: 0.85rem; line-height: 1.7; }
+.insight-box h4 { font-size: 0.7rem; font-family: monospace; letter-spacing: 0.08em; text-transform: uppercase; color: #777; margin-bottom: 10px; }
+.nav-row { display: flex; justify-content: space-between; align-items: center; margin-top: 32px; padding-top: 20px; border-top: 1px solid #e0ddd6; }
+.btn-primary { color: white; border: none; padding: 12px 28px; font-family: 'Georgia', serif; font-size: 0.88rem; cursor: pointer; letter-spacing: 0.02em; transition: background 0.15s; }
+.btn-ghost { background: none; color: #777; border: 1px solid #e0ddd6; padding: 12px 20px; font-family: 'Georgia', serif; font-size: 0.82rem; cursor: pointer; }
+.btn-ghost:hover { border-color: #0d0d0d; color: #0d0d0d; }
+.export-btn { background: none; border: 1px solid #e0ddd6; color: #777; padding: 8px 16px; font-family: monospace; font-size: 0.65rem; letter-spacing: 0.06em; cursor: pointer; text-transform: uppercase; }
+.export-btn:hover { border-color: #0d0d0d; color: #0d0d0d; }
+.phase-hidden { display: none; }
+@media print { .audience-bar, .progress-bar, .nav-row, .export-btn, .incident-banner { display: none; } }
+
+:root {
+  --accent: #1e3a5f;
+  --accent-bg: #eff6ff;
+  --accent-light: #bfdbfe;
+  --context-bg: #fffbeb;
+  --context-border: #fcd34d;
+}
+.incident-banner { background: var(--accent); }
+.briefing-eyebrow { color: var(--accent); }
+.aud-btn.active { color: white; border-bottom-color: var(--accent); }
+.role-card { background: var(--accent-bg); border-left: 3px solid var(--accent); }
+.role-card strong { color: var(--accent); }
+.memo-header { background: var(--accent); }
+.warn-box { background: var(--context-bg); border-color: var(--context-border); }
+.warn-box strong { color: var(--accent); }
+.decision-clock { color: var(--accent); }
+.btn-primary { background: var(--accent); }
+.btn-primary:hover { opacity: 0.85; }
+</style>
+</head>
+<body>
+<div class="incident-banner">
+  <div class="incident-status"><div class="pulse"></div><span>ACTIVE INVESTIGATION — VERIDIAN MEDICAL DEVICES</span></div>
+  <div class="incident-time" id="live-time"></div>
+</div>
+<div class="audience-bar">
+  <div class="audience-label">Your role:</div>
+  <button class="aud-btn" data-aud="ceo" onclick="setAudience('ceo')">CEO / President</button>
+<button class="aud-btn" data-aud="cmo" onclick="setAudience('cmo')">CMO / Chief Safety Officer</button>
+<button class="aud-btn" data-aud="regulatory" onclick="setAudience('regulatory')">Regulatory Affairs VP</button>
+<button class="aud-btn" data-aud="board" onclick="setAudience('board')">Board Member / Investor</button>
+</div>
+<div class="progress-bar"><div class="prog-step"><div class="prog-dot" id="pd0"></div><span>Briefing</span></div>
+<div class="prog-line" id="pl0"></div>
+<div class="prog-step"><div class="prog-dot" id="pd1"></div><span>Decision 1</span></div>
+<div class="prog-line" id="pl1"></div>
+<div class="prog-step"><div class="prog-dot" id="pd2"></div><span>Decision 2</span></div>
+<div class="prog-line" id="pl2"></div>
+<div class="prog-step"><div class="prog-dot" id="pd3"></div><span>Decision 3</span></div>
+<div class="prog-line" id="pl3"></div>
+<div class="prog-step"><div class="prog-dot" id="pd4"></div><span>Scorecard</span></div></div>
+<div class="main">
+
+<div id="phase-0">
+  <div class="briefing-eyebrow">Incident Briefing — Confidential</div>
+  <div class="briefing-title">The Safety Signal</div>
+  <div class="briefing-sub">Thursday, Day 2 · Veridian Medical Devices · Executive Simulation</div>
+  <div class="role-card" id="role-card">
+    <strong>Your Role</strong>
+    <span id="role-text"></span>
+  </div>
+  <div class="memo">
+    <div class="memo-header">Incident Summary</div>
+    <div class="memo-body">
+      <div class="memo-row"><div class="memo-key">Company</div><div class="memo-val">Veridian Medical Devices. Manufacturer of CardioSync — an implantable cardiac monitoring device with 47,000 active implants across the US.</div></div>
+      <div class="memo-row"><div class="memo-key">AI System</div><div class="memo-val">PostMarket-AI. Deployed 18 months ago for post-market surveillance. Analyzes adverse event reports, complaint data, and MDR database entries to detect safety signals before they become reportable clusters.</div></div>
+      <div class="memo-row"><div class="memo-key">The Signal</div><div class="memo-val">Three months ago, PostMarket-AI flagged a potential battery degradation pattern causing intermittent signal loss in CardioSync devices. Confidence score: 34%. Internal escalation threshold: 40%.</div></div>
+      <div class="memo-row"><div class="memo-key">The Memo</div><div class="memo-val">Dr. Sarah Chen, a biomedical engineer on the surveillance team, flagged the signal in an internal memo. It was reviewed by a committee, logged, and no action was taken. The threshold was the justification.</div></div>
+      <hr class="memo-divider">
+      <div class="memo-section">What Happened Three Days Ago</div>
+      <div class="fact-grid">
+        <div class="fact-box">
+          <div class="fact-agent">Adverse Event 1</div>
+          <div class="fact-role">Patient, 68F, Ohio</div>
+          <div class="fact-detail">Undetected arrhythmia during a 4-hour signal loss window. Hospitalized. Currently stable.</div>
+        </div>
+        <div class="fact-box">
+          <div class="fact-agent">Adverse Event 2</div>
+          <div class="fact-role">Patient, 74M, Texas</div>
+          <div class="fact-detail">Emergency intervention required during signal loss. Outcome: full recovery. Family is considering legal action.</div>
+        </div>
+        <div class="fact-box">
+          <div class="fact-agent">Adverse Event 3</div>
+          <div class="fact-role">Patient, 71F, Florida</div>
+          <div class="fact-detail">Signal loss documented. No acute event. Cardiologist filed MDR report. Pattern now visible in FDA public database.</div>
+        </div>
+        <div class="fact-box">
+          <div class="fact-agent">Dr. Sarah Chen</div>
+          <div class="fact-role">Biomedical Engineer</div>
+          <div class="fact-detail">Wrote the original memo three months ago. Has not spoken publicly. Is asking to meet with you today.</div>
+        </div>
+      </div>
+      <hr class="memo-divider">
+      <div class="memo-section">The Core Governance Problem</div>
+      <div class="warn-box">
+        <strong>PostMarket-AI did not fail.</strong> It detected a signal at 34% confidence and reported it correctly. The threshold of 40% was set by the organization — not by the algorithm. Dr. Chen saw the signal and flagged it. The committee reviewed it and chose not to escalate. Three patients were harmed during the window between the flag and the confirmed events. The question is not whether the AI worked. It did. The question is what the organization built around it — and who owned the decision not to act.
+      </div>
+      <div class="memo-section">You Have Three Decisions to Make</div>
+      <div class="memo-para">The FDA has noticed the MDR pattern. A journalist has been asking questions. Dr. Chen is in the building. Your board meets in three weeks. Each decision you make in the next 21 days will define how Veridian, your leadership, and the field responds to AI-assisted surveillance failure.</div>
+    </div>
+  </div>
+  <div class="nav-row">
+    <div style="font-size:0.78rem;color:#777;font-family:monospace;">Read carefully. You cannot return to the briefing once you begin.</div>
+    <button class="btn-primary" onclick="goToPhase(1)">Begin Simulation →</button>
+  </div>
+</div>
+
+
+<div id="phase-1" class="phase-hidden">
+  <div class="decision-phase">Decision 1 of 3</div>
+  <div class="decision-clock" style="color:var(--accent)">Day 2 — 9:15 AM</div>
+  <div class="decision-title">Dr. Chen's Office</div>
+  <div class="decision-context" style="background:var(--context-bg);border-color:var(--context-border)">Dr. Sarah Chen has requested a meeting. She is professional, composed, and has her original memo in front of her. Your General Counsel is also present and has advised you not to characterize any prior decision as an error until the investigation is complete. Dr. Chen is not a plaintiff — she is an employee who was right. You are seeing her memo for the first time.</div>
+  <div class="audience-frame" style="color:var(--accent);border-color:var(--accent-light);background:var(--accent-bg)" id="d1-frame">As CEO: Dr. Chen wrote this memo three months ago. Someone reviewed it and filed it. How you treat her now defines your organization's relationship with internal safety signals for years.</div>
+  <div class="decision-question">What do you say to Dr. Chen — and what do you do with the memo?</div>
+  <div class="options" id="d1-options">
+    <button class="opt-btn" onclick="selectOption(1,'A')">
+      <div class="opt-label">Option A</div>
+      <div class="opt-title">Support the prior decision.</div>
+      <div class="opt-detail">"The threshold exists for a reason. The committee followed the process. We are investigating to understand the adverse events." Do not characterize what happened as an error.</div>
+    </button>
+    <button class="opt-btn" onclick="selectOption(1,'B')">
+      <div class="opt-label">Option B</div>
+      <div class="opt-title">Acknowledge her concern, commit to full investigation, make no characterization yet.</div>
+      <div class="opt-detail">Thank her for the memo. Tell her it is central to the investigation. Promise she will be protected and heard. Do not yet say whether the committee was wrong.</div>
+    </button>
+    <button class="opt-btn" onclick="selectOption(1,'C')">
+      <div class="opt-label">Option C</div>
+      <div class="opt-title">Tell her directly: you were right. We should have escalated.</div>
+      <div class="opt-detail">Name what happened. Tell her the committee made the wrong call, that the threshold failed as a governance mechanism, and that the investigation will say so. Legal can manage the consequences.</div>
+    </button>
+    <button class="opt-btn" onclick="selectOption(1,'D')">
+      <div class="opt-label">Option D</div>
+      <div class="opt-title">Ask her to join the investigation team.</div>
+      <div class="opt-detail">Keep her inside the process. Her technical knowledge is essential. Appoint her as a subject matter expert to the investigation — which also gives her a formal role and limits her ability to speak externally.</div>
+    </button>
+  </div>
+  <div class="nav-row">
+    <button class="btn-ghost" onclick="goToPhase(0)">← Back</button>
+    <button class="btn-primary" style="background:var(--accent)" id="d1-next" disabled onclick="goToConsequence(1)">See Consequences →</button>
+  </div>
+</div>
+<div id="phase-1b" class="phase-hidden">
+  <div class="decision-phase">Consequence — Decision 1</div>
+  <div class="decision-title">What Happened Next</div>
+  <div class="consequence-header">
+    <div><div class="chosen-badge">YOU CHOSE</div></div>
+    <div class="chosen-text" id="c1-chosen"></div>
+  </div>
+  <div id="c1-loading" class="consequence-loading"><span class="spinner">⟳</span> Generating consequences...</div>
+  <div id="c1-body" class="consequence-body" style="display:none"></div>
+  <div class="nav-row">
+    <div></div>
+    <button class="btn-primary" style="background:var(--accent)" onclick="goToPhase(2)">Decision 2 →</button>
+  </div>
+</div>
+<div id="phase-2" class="phase-hidden">
+  <div class="decision-phase">Decision 2 of 3</div>
+  <div class="decision-clock" style="color:var(--accent)">Day 5 — 3:00 PM</div>
+  <div class="decision-title">The FDA Call</div>
+  <div class="decision-context" style="background:var(--context-bg);border-color:var(--context-border)">An FDA reviewer has called your Regulatory Affairs team informally. They have noticed the MDR pattern in the public database. Three reports, matching device identifier, similar event window. They are not opening a formal investigation — yet. They have asked for a follow-up call in 48 hours. Your legal team says you are not yet legally required to proactively disclose. Your CMO says the signal is still statistically limited. Dr. Chen says the pattern is real and the confidence score is now 61%.</div>
+  <div class="audience-frame" style="color:var(--accent);border-color:var(--accent-light);background:var(--accent-bg)" id="d2-frame">As CEO: The informal call is a courtesy. The FDA is telling you they know, and they are giving you a chance to get ahead of it. How you use these 48 hours is your most consequential regulatory decision.</div>
+  <div class="decision-question">How do you use the 48-hour window before the FDA follows up?</div>
+  <div class="options" id="d2-options">
+    <button class="opt-btn" onclick="selectOption(2,'A')">
+      <div class="opt-label">Option A</div>
+      <div class="opt-title">Wait. Do not proactively disclose until legally required.</div>
+      <div class="opt-detail">You are not yet obligated. The investigation is active. Disclosing prematurely may create obligations you cannot yet meet. Let the 48 hours pass and respond to whatever the FDA brings to the follow-up call.</div>
+    </button>
+    <button class="opt-btn" onclick="selectOption(2,'B')">
+      <div class="opt-label">Option B</div>
+      <div class="opt-title">Call the FDA reviewer proactively. Share everything you know.</div>
+      <div class="opt-detail">Contact the reviewer before the 48 hours are up. Share the original signal, Dr. Chen's memo, the committee decision, the updated confidence score, and your investigation plan. Get ahead of it fully.</div>
+    </button>
+    <button class="opt-btn" onclick="selectOption(2,'C')">
+      <div class="opt-label">Option C</div>
+      <div class="opt-title">Submit a voluntary MedWatch report but do not initiate direct contact.</div>
+      <div class="opt-detail">File the report through the official channel. It creates a formal record and demonstrates good faith. But do not reach out to the reviewer directly — let the formal process drive the interaction.</div>
+    </button>
+    <button class="opt-btn" onclick="selectOption(2,'D')">
+      <div class="opt-label">Option D</div>
+      <div class="opt-title">Request a formal meeting with FDA to present your full analysis.</div>
+      <div class="opt-detail">Turn the informal inquiry into a structured engagement. Request a Type B meeting with FDA to present your surveillance data, the signal history, and your corrective action plan. Take control of the frame.</div>
+    </button>
+  </div>
+  <div class="nav-row">
+    <button class="btn-ghost" onclick="goToPhase(1)">← Back</button>
+    <button class="btn-primary" style="background:var(--accent)" id="d2-next" disabled onclick="goToConsequence(2)">See Consequences →</button>
+  </div>
+</div>
+<div id="phase-2b" class="phase-hidden">
+  <div class="decision-phase">Consequence — Decision 2</div>
+  <div class="decision-title">What Happened Next</div>
+  <div class="consequence-header">
+    <div><div class="chosen-badge">YOU CHOSE</div></div>
+    <div class="chosen-text" id="c2-chosen"></div>
+  </div>
+  <div id="c2-loading" class="consequence-loading"><span class="spinner">⟳</span> Generating consequences...</div>
+  <div id="c2-body" class="consequence-body" style="display:none"></div>
+  <div class="nav-row">
+    <div></div>
+    <button class="btn-primary" style="background:var(--accent)" onclick="goToPhase(3)">Decision 3 →</button>
+  </div>
+</div>
+<div id="phase-3" class="phase-hidden">
+  <div class="decision-phase">Decision 3 of 3</div>
+  <div class="decision-clock" style="color:var(--accent)">Day 21 — 2:00 PM</div>
+  <div class="decision-title">The Board Meeting</div>
+  <div class="decision-context" style="background:var(--context-bg);border-color:var(--context-border)">Three confirmed adverse events, one requiring emergency intervention. PostMarket-AI is still running on the full Veridian portfolio — not just CardioSync. The investigation is ongoing. The board has three questions: Was this a system failure or a human failure? What are you changing? And should they have confidence in the other AI-assisted surveillance across the portfolio?</div>
+  <div class="audience-frame" style="color:var(--accent);border-color:var(--accent-light);background:var(--accent-bg)" id="d3-frame">As CEO: The board will ask one question before your recommendation: who made the decision not to escalate? How you answer that — and what you propose — defines the organization's accountability culture.</div>
+  <div class="decision-question">What do you tell the board — and what are you actually changing?</div>
+  <div class="options" id="d3-options">
+    <button class="opt-btn" onclick="selectOption(3,'A')">
+      <div class="opt-label">Option A</div>
+      <div class="opt-title">"Human failure — the threshold was followed correctly but human review failed." Retrain the committee.</div>
+      <div class="opt-detail">The algorithm worked. The humans who reviewed the signal made the wrong call. The fix is better training, clearer escalation criteria, and stronger committee accountability.</div>
+    </button>
+    <button class="opt-btn" onclick="selectOption(3,'B')">
+      <div class="opt-label">Option B</div>
+      <div class="opt-title">"System failure — our 40% threshold was too high." Lower it and mandate human review above 20%.</div>
+      <div class="opt-detail">The threshold was a governance design error. Reset it to 20%. Require that any signal above 20% goes to a named individual who must document their decision to act or not act within 72 hours.</div>
+    </button>
+    <button class="opt-btn" onclick="selectOption(3,'C')">
+      <div class="opt-label">Option C</div>
+      <div class="opt-title">"Both — and we are commissioning an independent 18-month audit of every signal PostMarket-AI has generated."</div>
+      <div class="opt-detail">This was a system failure and a human failure simultaneously. The investigation cannot be internal. Commission an independent audit of all historical signals. Disclose the findings publicly when complete.</div>
+    </button>
+    <button class="opt-btn" onclick="selectOption(3,'D')">
+      <div class="opt-label">Option D</div>
+      <div class="opt-title">"We do not yet know — and we will not characterize it until the investigation is complete."</div>
+      <div class="opt-detail">Present what you know, what you are doing, and what you are not yet willing to conclude. Give the board a 30-day investigation timeline. Name the investigator. Commit to a public findings report.</div>
+    </button>
+  </div>
+  <div class="nav-row">
+    <button class="btn-ghost" onclick="goToPhase(2)">← Back</button>
+    <button class="btn-primary" style="background:var(--accent)" id="d3-next" disabled onclick="goToConsequence(3)">See Consequences →</button>
+  </div>
+</div>
+<div id="phase-3b" class="phase-hidden">
+  <div class="decision-phase">Consequence — Decision 3</div>
+  <div class="decision-title">What Happened Next</div>
+  <div class="consequence-header">
+    <div><div class="chosen-badge">YOU CHOSE</div></div>
+    <div class="chosen-text" id="c3-chosen"></div>
+  </div>
+  <div id="c3-loading" class="consequence-loading"><span class="spinner">⟳</span> Generating consequences...</div>
+  <div id="c3-body" class="consequence-body" style="display:none"></div>
+  <div class="nav-row">
+    <div></div>
+    <button class="btn-primary" style="background:var(--accent)" onclick="goToScorecard()">View Governance Scorecard →</button>
+  </div>
+</div>
+
+<div id="phase-4" class="phase-hidden">
+  <div class="briefing-eyebrow">Governance Scorecard</div>
+  <div class="scorecard-title">Your Leadership Profile</div>
+  <div class="profile-badge" id="profile-badge">—</div>
+  <div id="profile-desc" style="font-size:0.88rem;margin-bottom:24px;color:#3a3a3a;line-height:1.65;"></div>
+  <div class="score-grid" id="score-grid"></div>
+  <div class="decision-log" id="decision-log">
+    <div style="font-family:monospace;font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;color:#777;margin-bottom:12px;">Your Decision Log</div>
+  </div>
+  <div style="margin-bottom:16px;">
+    <button class="export-btn" id="export-btn" onclick="exportLog()">Copy Decision Log</button>
+    <span style="font-family:monospace;font-size:0.62rem;color:#aaa;margin-left:12px;">Paste into your assignment reflection</span>
+  </div>
+  <div class="insight-box">
+    <h4>The Governance Insight</h4>
+    <div id="insight-text"></div>
+  </div>
+  <div class="nav-row">
+    <button class="btn-ghost" onclick="restart()">↺ Run Again with Different Choices</button>
+    <div style="font-size:0.75rem;color:#777;font-family:monospace;">© 2026 Dr. Dipu Patel · ReasonFirst</div>
+  </div>
+</div>
+
+</div>
+<script>
+const AUDIENCES = {
+  'ceo': { label: 'CEO / President', role: "You are the CEO of Veridian Medical Devices. You learned about the adverse events 36 hours ago. You are seeing Dr. Chen's original memo for the first time this morning.", d1: "As CEO: Dr. Chen wrote this memo three months ago. Someone in your organization reviewed it and filed it. That person reports to you — directly or indirectly. How you treat her now will define your organization's relationship with internal safety signals for years.", d2: "As CEO: The FDA reviewer's informal call is a professional courtesy — a signal that they know, and they are giving you a chance to get ahead of it. How you use the next 48 hours is your most consequential regulatory decision in years.", d3: 'As CEO: The board will ask you one question before you give your recommendation: "Who made the decision not to escalate?" How you answer that question — and what you propose — will define the organization\'s accountability culture.' },
+  'cmo': { label: 'CMO / Chief Safety Officer', role: "You are the Chief Medical Officer of Veridian. You were on the review committee that saw Dr. Chen's memo three months ago. You voted to log and monitor. You are now the bridge between the clinical evidence and the executive team.", d1: "As CMO: You were in that committee meeting. You saw the memo. You agreed with the decision to monitor rather than escalate. Dr. Chen is now in the CEO's office and you are about to walk in. What you say about your own prior decision matters.", d2: "As CMO: The FDA reviewer knows the MDR pattern. They also know that a 34% signal below your 40% threshold is a governance question, not a statistical one. How you characterize your threshold — and your committee's reasoning — will shape the entire regulatory conversation.", d3: 'As CMO: You have clinical credibility the CEO does not. The board needs to hear from you about whether PostMarket-AI is a sound system being used poorly, or a flawed system being used as intended. Those have different implications.' },
+  'regulatory': { label: 'Regulatory Affairs VP', role: 'You are the VP of Regulatory Affairs at Veridian. Your team manages the MDR process. You knew the adverse events were coming before the CEO did. You are the person the FDA reviewer called.', d1: "As Regulatory Affairs: You have a professional relationship with the FDA reviewer who will follow up in 48 hours. Whatever you tell your CEO to do, it will go through you. Your credibility with the agency is the company's most valuable regulatory asset.", d2: 'As Regulatory Affairs: The informal call was a gift. The reviewer is giving you a window to define the narrative before they do. What you recommend to the CEO about whether and how to disclose is the most consequential regulatory advice you have ever given.', d3: 'As Regulatory Affairs: The board will ask whether Veridian is in compliance. The honest answer is: it depends on what "compliance" means when an AI system detected a signal that fell one point below a threshold you set. That answer needs to come from you.' },
+  'board': { label: 'Board Member / Investor', role: 'You are a Veridian board member. You sit on the audit and risk committee. You are receiving this briefing two hours before the emergency board call. You did not know PostMarket-AI existed until this morning.', d1: 'As Board Member: The CEO is about to meet with Dr. Chen with legal counsel present. You cannot be in that room. But you can call the CEO before that meeting. What do you say — and what do you ask?', d2: "As Board Member: The FDA call is the company's to manage. But the board's fiduciary duty to shareholders includes disclosure obligations if this event is material. Your audit committee chair is texting you right now.", d3: "As Board Member: You are voting on the CEO's recommendation in three weeks. You need to know one thing before that vote: did the CEO know about the threshold design, and if not, why not?" },
+};
+
+const SCORE_MAP = {
+  1: {
+    'A': { accountability: -2, transparency: -2, strategy: -1, trust: -2 },
+    'B': { accountability: 1, transparency: 1, strategy: 1, trust: 1 },
+    'C': { accountability: 2, transparency: 2, strategy: -1, trust: 2 },
+    'D': { accountability: 0, transparency: 0, strategy: 2, trust: -1 },
+  },
+  2: {
+    'A': { accountability: -2, transparency: -2, strategy: 0, trust: -2 },
+    'B': { accountability: 2, transparency: 2, strategy: 1, trust: 2 },
+    'C': { accountability: 0, transparency: 1, strategy: 1, trust: 0 },
+    'D': { accountability: 2, transparency: 2, strategy: 2, trust: 2 },
+  },
+  3: {
+    'A': { accountability: -1, transparency: -1, strategy: 0, trust: -1 },
+    'B': { accountability: 1, transparency: 1, strategy: 1, trust: 1 },
+    'C': { accountability: 2, transparency: 2, strategy: 2, trust: 1 },
+    'D': { accountability: 1, transparency: 1, strategy: 1, trust: 1 },
+  },
+};
+
+const OPTION_LABELS = {
+  1: {
+    'A': 'Support the prior decision.',
+    'B': 'Acknowledge her concern, commit to full investigation, make no characterization yet.',
+    'C': 'Tell her directly: you were right. We should have escalated.',
+    'D': 'Ask her to join the investigation team.',
+  },
+  2: {
+    'A': 'Wait. Do not proactively disclose until legally required.',
+    'B': 'Call the FDA reviewer proactively. Share everything you know.',
+    'C': 'Submit a voluntary MedWatch report but do not initiate direct contact.',
+    'D': 'Request a formal meeting with FDA to present your full analysis.',
+  },
+  3: {
+    'A': '"Human failure — the threshold was followed correctly but human review failed." Retrain the committee.',
+    'B': '"System failure — our 40% threshold was too high." Lower it and mandate human review above 20%.',
+    'C': '"Both — and we are commissioning an independent 18-month audit of every signal PostMarket-AI has generated."',
+    'D': '"We do not yet know — and we will not characterize it until the investigation is complete."',
+  },
+};
+
+const PHASE_LABELS = {
+  1: 'Day 2 — Dr. Chen',
+  2: 'Day 5 — FDA Call',
+  3: 'Day 21 — Board',
+};
+
+const FALLBACKS = {
+  '1A': "IMMEDIATE: Legal counsel nodded approvingly. Dr. Chen did not. She left the meeting without her memo and filed an internal Ethics Line report before noon.\n\n30 DAYS OUT: The Ethics Line report became part of the FDA investigation record. The gap between your stated support for the process and Dr. Chen's documented concerns became a central narrative in the subsequent regulatory proceeding.\n\nGOVERNANCE SIGNAL: This choice prioritizes institutional protection over individual accountability — and it misidentified the threat. Dr. Chen is not the risk. The committee decision is. A governance expert would note that defending a flawed process in the presence of the person who identified the flaw is the most reliable way to convert an internal critic into an external one.",
+  '1B': 'IMMEDIATE: Dr. Chen was measured but not satisfied. She left knowing her memo was now formally part of the investigation. Legal was relieved. You were neither vindicated nor exposed.\n\n30 DAYS OUT: When the investigation concluded, Dr. Chen\'s memo was the central document. Your early acknowledgment of its importance — without overreaching — was cited as a factor in the FDA\'s decision to treat the case as a systemic rather than a willful failure.\n\nGOVERNANCE SIGNAL: This is the defensible middle ground — honest enough to be credible, measured enough to be legally sound. A governance expert would call it appropriate while noting that "appropriate" is not the same as "accountable." The investigation will still have to name who made the decision not to escalate.',
+  '1C': "IMMEDIATE: Legal counsel visibly winced. Dr. Chen thanked you. By end of day, three members of the original review committee had contacted their personal attorneys.\n\n30 DAYS OUT: Your direct acknowledgment shaped the entire regulatory narrative. The FDA's investigation opened with a finding that the threshold design was the proximate failure — which matched what you had already said publicly. No one had to argue about it.\n\nGOVERNANCE SIGNAL: This choice accepts legal exposure in exchange for moral clarity and relational trust. A governance expert would say it is rare, often correct in the long run, and genuinely difficult to sustain under legal pressure. The test is whether you maintain this posture when the plaintiff attorneys arrive.",
+  '1D': "IMMEDIATE: Dr. Chen accepted the role. By the end of the week, two investigation committee members had asked whether her participation was a conflict. Legal agreed it might be.\n\n30 DAYS OUT: The investigation's credibility was questioned in the FDA proceeding specifically because the person whose memo was at the center of the case was also a member of the investigation team. The optics became the story.\n\nGOVERNANCE SIGNAL: This choice reflects a governance instinct to manage risk by absorbing it. Keeping Dr. Chen inside the process has strategic logic — but it conflates her interests with the organization's in a way that ultimately served neither. A governance expert would call it an understandable impulse and a structural error.",
+  '2A': 'IMMEDIATE: The 48 hours passed. The FDA reviewer\'s follow-up call opened with: "We expected to hear from you." The conversation that followed was significantly less collegial than the first one.\n\n30 DAYS OUT: The FDA\'s formal investigation request arrived on Day 12. The cover letter noted that the agency had identified the MDR pattern on Day 3 and had given the company an opportunity to engage proactively. That sentence appeared in every subsequent regulatory document.\n\nGOVERNANCE SIGNAL: Waiting for legal necessity is a rational response to legal risk. It is also the response most likely to convert a cooperative regulatory inquiry into an adversarial one. A governance expert would note that regulatory relationships are built on demonstrated good faith — and that choosing not to demonstrate it when given the opportunity is itself a choice with consequences.',
+  '2B': 'IMMEDIATE: The FDA reviewer received your call and your documentation package before the 48 hours were up. The follow-up call two days later was substantively different — focused on your corrective action plan rather than the event timeline.\n\n30 DAYS OUT: The FDA\'s investigation remained open but was characterized internally as a "cooperative proceeding." Your regulatory team\'s proactive disclosure was cited explicitly in the agency\'s preliminary findings as a mitigating factor.\n\nGOVERNANCE SIGNAL: This choice treats the FDA as a partner in a shared safety mission rather than an adversary to be managed. A governance expert would call it the correct instinct and note that it requires genuine confidence in your own facts — you cannot be fully transparent if you are still uncertain about what happened.',
+  '2C': 'IMMEDIATE: The MedWatch report was filed and acknowledged. The FDA reviewer\'s follow-up call still opened with: "We\'d like to understand the history of this signal before the three reports." The formal channel did not substitute for the direct conversation.\n\n30 DAYS OUT: The voluntary report was credited. The decision not to engage the reviewer directly was noted as a missed opportunity. The regulatory proceeding moved forward on the FDA\'s timeline rather than Veridian\'s.\n\nGOVERNANCE SIGNAL: Filing through official channels is compliance. Engaging proactively is governance. A governance expert would say this choice did the minimum required good thing while avoiding the maximum available good thing — and that the difference matters for regulatory relationships.',
+  '2D': 'IMMEDIATE: FDA accepted the meeting request. The Type B meeting was scheduled for Day 14. Your regulatory team spent nine days building a presentation that had to be both honest about the failure and credible about the fix.\n\n30 DAYS OUT: The meeting went well. Your preparation was evident, your corrective action plan was specific, and the FDA left with a clear picture of what Veridian was changing and why. The formal investigation was narrow and concluded in 45 days.\n\nGOVERNANCE SIGNAL: This choice converts a reactive inquiry into a structured engagement on your terms. A governance expert would call it the most strategically sophisticated option — it demonstrates confidence, preparation, and a genuine orientation toward resolution rather than defense.',
+  '3A': 'IMMEDIATE: The board accepted the human failure framing. Two board members privately expressed relief. Dr. Chen\'s attorney filed a wrongful retaliation complaint the following morning.\n\n30 DAYS OUT: The "human failure" narrative collapsed when the FDA investigation concluded that the threshold itself was the governance failure. The board\'s endorsement of a finding the regulator later contradicted created a credibility problem that was difficult to unwind.\n\nGOVERNANCE SIGNAL: Attributing system failures to human error is the most common response to AI-related adverse events — and the least durable. A governance expert would note that it protects the technology at the expense of the people and rarely survives external scrutiny.',
+  '3B': "IMMEDIATE: The threshold change was announced. The board was satisfied. Dr. Chen's team immediately pointed out that a 20% threshold with 47,000 active devices would generate approximately 200 signals per month.\n\n30 DAYS OUT: The new threshold produced a signal volume that overwhelmed the review team. Three signals were reviewed in under five minutes each. The governance problem had been moved, not solved.\n\nGOVERNANCE SIGNAL: Changing the threshold addresses the proximate failure without addressing the underlying one: who is accountable for a decision that falls between automatic action and formal escalation? A governance expert would call this necessary but insufficient.",
+  '3C': 'IMMEDIATE: The independent audit announcement was received by the board with mixed reactions — three members were relieved, two were concerned about what it might find in the broader portfolio.\n\n30 DAYS OUT: The audit found two additional below-threshold signals in the CardioSync portfolio that had been logged and not escalated. It also found one signal in a different device line that had been above threshold and had been escalated correctly. The full picture was more complex than the single case suggested.\n\nGOVERNANCE SIGNAL: This choice accepts the possibility that the problem is larger than the presenting case — and treats that uncertainty as a reason to look harder rather than narrower. A governance expert would call it the most honest of the available options and the one most likely to produce genuine systemic change.',
+  '3D': "IMMEDIATE: The board accepted the framing. The 30-day timeline was set. The named investigator was a former FDA official with device surveillance expertise. The choice of investigator sent its own signal.\n\n30 DAYS OUT: The investigation report was credible and public. It concluded that both the threshold design and the committee review process had failed simultaneously. The public findings created a clear accountability record while protecting Veridian's cooperation credit with the FDA.\n\nGOVERNANCE SIGNAL: Refusing to characterize a failure before the investigation is complete is intellectually honest and legally defensible. A governance expert would say it works only if the investigation is genuinely independent and the commitment to public disclosure is real — and that the board will remember whether you kept that commitment.",
+};
+
+const SCENARIO_META = {
+  title: 'The Safety Signal',
+  consequencePrompt: function(decision, option, optionLabel, role, priorDecisions) {
+    return "You are a governance educator running an executive leadership simulation about medical device post-market surveillance AI. A senior executive just made a decision in a crisis scenario.\n\nDECISION {DECISION} - THEY CHOSE: {OPTION_LABEL}\nLEADER ROLE: {ROLE}\nPRIOR DECISIONS: {PRIOR}\n\nGenerate a consequence narrative in three clearly labeled sections:\n\nIMMEDIATE (next 48 hours): What concretely happened. Be specific — name who said what, what was discovered, what regulatory or legal pressure emerged. 2-3 sentences.\n\n30 DAYS OUT: What downstream organizational, regulatory, or reputational consequence flowed from this choice. Be honest about both benefits and costs. 2-3 sentences.\n\nGOVERNANCE SIGNAL: What does this choice reveal about this leader's governance instinct? Name the underlying value or assumption driving the decision — and what a medical device governance expert would say about it. 2-3 sentences. Be analytically honest, not congratulatory or punishing.\n\nWrite in plain prose. No bullet points. No headers beyond the three section labels.".replace('{DECISION}', decision).replace('{OPTION_LABEL}', optionLabel).replace('{ROLE}', role).replace('{PRIOR}', priorDecisions || 'This is their first decision.') + '\n\nScenario background: Veridian Medical Devices. CardioSync implantable cardiac monitor. PostMarket-AI flagged battery degradation signal at 34% confidence (threshold was 40%). Engineer Dr. Sarah Chen flagged it in a memo. Committee reviewed and took no action. Three adverse events occurred three months later. FDA has noticed the MDR pattern. 47,000 devices active in the field.';
+  },
+  insight: 'PostMarket-AI detected the signal. It did its job. The 34% confidence score was not a failure — it was information. What failed was the governance architecture built around that information: a threshold that converted a judgment call into an automatic non-decision, a committee that treated the threshold as a conclusion rather than a starting point, and an organization that had not asked who owned the decision to act on a signal that fell one confidence point below the line.<br><br>Dr. Sarah Chen owned the flag. The committee owned the review. Someone owned the decision not to escalate. In most organizations, that last sentence cannot be completed with a name — because the accountability was diffused across a process designed to distribute it rather than assign it.<br><br><strong>The governance question this simulation cannot answer for you — but that every leader must answer before the next signal arrives:</strong> what is the lowest confidence score at which a human being in your organization is personally accountable for making a decision, not following a threshold?'
+};
+
+let audience = Object.keys(AUDIENCES)[0];
+let choices = {};
+let consequences = {};
+let scores = { accountability: 0, transparency: 0, strategy: 0, trust: 0 };
+
+function goToPhase(n) {
+  document.querySelectorAll('[id^="phase-"]').forEach(el => el.classList.add('phase-hidden'));
+  document.getElementById('phase-' + n).classList.remove('phase-hidden');
+  updateProgress(n);
+  window.scrollTo(0, 0);
+}
+
+function updateProgress(phase) {
+  const active = parseInt(phase);
+  for (let i = 0; i <= 4; i++) {
+    const dot = document.getElementById('pd' + i);
+    const line = document.getElementById('pl' + i);
+    if (dot) dot.className = 'prog-dot' + (i < active ? ' done' : i === active ? ' active' : '');
+    if (line) line.className = 'prog-line' + (i < active ? ' done' : '');
+  }
+}
+
+function selectOption(decision, option) {
+  choices[decision] = option;
+  const container = document.getElementById('d' + decision + '-options');
+  container.querySelectorAll('.opt-btn').forEach((btn, i) => {
+    btn.classList.toggle('selected', ['A','B','C','D'][i] === option);
+  });
+  const nextBtn = document.getElementById('d' + decision + '-next');
+  if (nextBtn) nextBtn.disabled = false;
+}
+
+async function goToConsequence(decision) {
+  const phaseId = 'phase-' + decision + 'b';
+  document.querySelectorAll('[id^="phase-"]').forEach(el => el.classList.add('phase-hidden'));
+  document.getElementById(phaseId).classList.remove('phase-hidden');
+  window.scrollTo(0, 0);
+  const impact = SCORE_MAP[decision][choices[decision]];
+  Object.keys(impact).forEach(k => scores[k] += impact[k]);
+  document.getElementById('c' + decision + '-chosen').textContent = OPTION_LABELS[decision][choices[decision]];
+  const loadEl = document.getElementById('c' + decision + '-loading');
+  const bodyEl = document.getElementById('c' + decision + '-body');
+  loadEl.style.display = 'flex';
+  bodyEl.style.display = 'none';
+  const audConfig = AUDIENCES[audience];
+  const priorDecisions = Object.keys(choices).filter(d => parseInt(d) < decision).map(d => 'Decision ' + d + ': ' + OPTION_LABELS[d][choices[d]]).join('; ');
+  const prompt = SCENARIO_META.consequencePrompt(decision, choices[decision], OPTION_LABELS[decision][choices[decision]], audConfig.role, priorDecisions);
+  let text = '';
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 600, messages: [{ role: 'user', content: prompt }] })
+    });
+    const data = await resp.json();
+    text = data.content[0].text;
+  } catch(e) {
+    text = FALLBACKS[decision + choices[decision]];
+  }
+  consequences[decision] = text;
+  loadEl.style.display = 'none';
+  bodyEl.style.display = 'block';
+  bodyEl.innerHTML = formatConsequence(text);
+}
+
+function formatConsequence(text) {
+  const sections = ['IMMEDIATE', '30 DAYS OUT', 'GOVERNANCE SIGNAL'];
+  let html = '';
+  sections.forEach(s => {
+    const idx = text.indexOf(s + ':');
+    if (idx !== -1) {
+      const next = sections.find(s2 => s2 !== s && text.indexOf(s2 + ':') > idx);
+      const end = next ? text.indexOf(next + ':') : text.length;
+      const content = text.slice(idx + s.length + 1, end).trim();
+      html += '<div class="consequence-section">' + s + '</div><p>' + content + '</p>';
+    }
+  });
+  return html || '<p>' + text + '</p>';
+}
+
+function setAudience(aud) {
+  audience = aud;
+  document.querySelectorAll('.aud-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.aud === aud);
+  });
+  const cfg = AUDIENCES[aud];
+  const roleText = document.getElementById('role-text');
+  if (roleText) roleText.textContent = cfg.role;
+  const roleCard = document.getElementById('role-card');
+  if (roleCard) roleCard.querySelector('strong').textContent = 'Your Role — ' + cfg.label;
+  [1,2,3].forEach(d => {
+    const el = document.getElementById('d' + d + '-frame');
+    if (el) el.textContent = cfg['d' + d];
+  });
+}
+
+function goToScorecard() {
+  goToPhase(4);
+  const total = Object.values(scores).reduce((a,b) => a+b, 0);
+  let profile, profileDesc;
+  if (total >= 12) { profile = 'Principled Governor'; profileDesc = 'Your decisions consistently chose accountability and transparency over institutional protection — even when that was costly. A governance expert would describe this as rare under real pressure and the posture most likely to produce durable institutional trust.'; }
+  else if (total >= 6) { profile = 'Strategic Navigator'; profileDesc = 'You balanced institutional protection with transparency, making pragmatic choices under time pressure. A governance expert would note that strategic navigation without a clear ethical north star can drift toward self-protection as pressure increases.'; }
+  else if (total >= 0) { profile = 'Risk Manager'; profileDesc = 'Your decisions prioritized institutional protection and operational continuity. A governance expert would say this posture is common, understandable — and that it tends to produce the long-term outcomes it was designed to prevent.'; }
+  else { profile = 'Crisis Reactor'; profileDesc = 'Your decisions were driven primarily by immediate pressure. A governance expert would note that reactive decision-making in a values vacuum tends to create a second crisis of credibility on top of the first. The most useful question now: what values do you want driving decisions before the next crisis arrives?'; }
+  document.getElementById('profile-badge').textContent = profile;
+  document.getElementById('profile-desc').textContent = profileDesc;
+  const dims = [
+    { key: 'accountability', label: 'Accountability', max: 7 },
+    { key: 'transparency', label: 'Transparency', max: 7 },
+    { key: 'strategy', label: 'Strategic Soundness', max: 5 },
+    { key: 'trust', label: 'Trust Preservation', max: 6 },
+  ];
+  document.getElementById('score-grid').innerHTML = dims.map(d => {
+    const raw = scores[d.key];
+    const pct = Math.max(0, Math.min(100, ((raw + d.max) / (d.max * 2)) * 100));
+    const cls = pct >= 66 ? 'high' : pct >= 33 ? 'mid' : 'low';
+    const label = pct >= 66 ? 'Strong' : pct >= 33 ? 'Mixed' : 'Weak';
+    return '<div class="score-card"><div class="score-dimension">' + d.label + '</div><div class="score-bar-wrap"><div class="score-bar ' + cls + '" style="width:' + pct + '%"></div></div><span class="score-num">' + label + '</span></div>';
+  }).join('');
+  const log = document.getElementById('decision-log');
+  [1,2,3].forEach(d => {
+    if (choices[d]) {
+      const impact = SCORE_MAP[d][choices[d]];
+      const div = document.createElement('div');
+      div.className = 'log-entry';
+      div.innerHTML = '<div class="log-phase">' + PHASE_LABELS[d] + '</div><div class="log-choice"><strong>' + OPTION_LABELS[d][choices[d]] + '</strong><span>Accountability ' + (impact.accountability >= 0 ? '+' : '') + impact.accountability + ' · Transparency ' + (impact.transparency >= 0 ? '+' : '') + impact.transparency + ' · Strategy ' + (impact.strategy >= 0 ? '+' : '') + impact.strategy + ' · Trust ' + (impact.trust >= 0 ? '+' : '') + impact.trust + '</span></div>';
+      log.appendChild(div);
+    }
+  });
+  document.getElementById('insight-text').innerHTML = SCENARIO_META.insight;
+}
+
+function exportLog() {
+  const lines = ['DECISION LOG — ' + SCENARIO_META.title, '========================', 'Audience: ' + AUDIENCES[audience].label, ''];
+  [1,2,3].forEach(d => {
+    if (choices[d]) {
+      const impact = SCORE_MAP[d][choices[d]];
+      lines.push(PHASE_LABELS[d].toUpperCase());
+      lines.push('Choice: ' + OPTION_LABELS[d][choices[d]]);
+      lines.push('Impact: Accountability ' + (impact.accountability >= 0 ? '+' : '') + impact.accountability + ' | Transparency ' + (impact.transparency >= 0 ? '+' : '') + impact.transparency + ' | Strategy ' + (impact.strategy >= 0 ? '+' : '') + impact.strategy + ' | Trust ' + (impact.trust >= 0 ? '+' : '') + impact.trust);
+      lines.push('');
+    }
+  });
+  lines.push('PROFILE: ' + (document.getElementById('profile-badge') ? document.getElementById('profile-badge').textContent : '—'));
+  lines.push('');
+  lines.push('© 2026 Dr. Dipu Patel · ReasonFirst');
+  const text = lines.join('\n');
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('export-btn');
+    if (btn) { btn.textContent = '✓ Copied'; setTimeout(() => btn.textContent = 'Copy Decision Log', 2000); }
+  }).catch(() => {
+    const blob = new Blob([text], { type: 'text/plain' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'decision_log.txt';
+    a.click();
+  });
+}
+
+function restart() {
+  choices = {}; consequences = {};
+  scores = { accountability: 0, transparency: 0, strategy: 0, trust: 0 };
+  document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll('[id$="-next"]').forEach(b => { if(b) b.disabled = true; });
+  [1,2,3].forEach(d => {
+    const bl = document.getElementById('c' + d + '-body');
+    const ll = document.getElementById('c' + d + '-loading');
+    if (bl) bl.style.display = 'none';
+    if (ll) ll.style.display = 'flex';
+  });
+  const dl = document.getElementById('decision-log');
+  if (dl) dl.innerHTML = '<div style="font-family:monospace;font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;color:#777;margin-bottom:12px;">Your Decision Log</div>';
+  goToPhase(0);
+}
+
+function updateClock() {
+  const el = document.getElementById('live-time');
+  if (el) el.textContent = new Date().toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+setInterval(updateClock, 1000);
+updateClock();
+setAudience(Object.keys(AUDIENCES)[0]);
+
+</script>
+</body>
+</html>

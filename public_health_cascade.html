@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Public Health Cascade — Executive Leadership Simulation</title>
+<style>
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Georgia', serif; background: #faf9f6; color: #0d0d0d; min-height: 100vh; font-size: 15px; line-height: 1.6; }
+.incident-banner { color: white; padding: 10px 24px; display: flex; align-items: center; justify-content: space-between; font-family: monospace; font-size: 0.72rem; letter-spacing: 0.06em; }
+.incident-status { display: flex; align-items: center; gap: 10px; }
+.pulse { width: 8px; height: 8px; background: white; border-radius: 50%; animation: pulse 1.4s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.incident-time { color: rgba(255,255,255,0.7); }
+.audience-bar { background: #0d0d0d; padding: 0 24px; display: flex; align-items: center; gap: 0; overflow-x: auto; }
+.audience-label { font-family: monospace; font-size: 0.62rem; color: #666; letter-spacing: 0.08em; text-transform: uppercase; padding-right: 20px; white-space: nowrap; flex-shrink: 0; }
+.aud-btn { background: none; border: none; color: #666; font-family: 'Georgia', serif; font-size: 0.78rem; padding: 14px 18px; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.15s; }
+.aud-btn:hover { color: #ccc; }
+.progress-bar { padding: 12px 24px; border-bottom: 1px solid #e0ddd6; display: flex; align-items: center; gap: 8px; }
+.prog-step { display: flex; align-items: center; gap: 8px; font-family: monospace; font-size: 0.62rem; color: #777; letter-spacing: 0.05em; }
+.prog-dot { width: 8px; height: 8px; border-radius: 50%; background: #e0ddd6; border: 1.5px solid #e0ddd6; flex-shrink: 0; }
+.prog-dot.done { background: #0d0d0d; border-color: #0d0d0d; }
+.prog-line { flex: 1; height: 1px; background: #e0ddd6; max-width: 40px; }
+.prog-line.done { background: #0d0d0d; }
+.main { max-width: 780px; margin: 0 auto; padding: 40px 24px 80px; }
+.briefing-eyebrow { font-family: monospace; font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+.briefing-title { font-size: 1.9rem; font-weight: normal; line-height: 1.2; margin-bottom: 4px; letter-spacing: -0.02em; }
+.briefing-sub { font-size: 0.82rem; color: #777; font-family: monospace; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid #e0ddd6; }
+.role-card { padding: 14px 18px; margin-bottom: 28px; font-size: 0.85rem; }
+.role-card strong { display: block; font-size: 0.7rem; font-family: monospace; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+.memo { border: 1px solid #e0ddd6; border-radius: 2px; overflow: hidden; margin-bottom: 28px; }
+.memo-header { color: white; padding: 10px 18px; font-family: monospace; font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; }
+.memo-body { padding: 20px 18px; font-size: 0.88rem; }
+.memo-row { display: flex; gap: 16px; margin-bottom: 8px; }
+.memo-key { font-family: monospace; font-size: 0.68rem; color: #777; min-width: 90px; padding-top: 2px; }
+.memo-val { flex: 1; }
+.memo-divider { border: none; border-top: 1px solid #e0ddd6; margin: 14px 0; }
+.memo-section { font-family: monospace; font-size: 0.65rem; letter-spacing: 0.08em; color: #777; text-transform: uppercase; margin-bottom: 8px; margin-top: 16px; }
+.memo-para { margin-bottom: 10px; font-size: 0.87rem; }
+.fact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0; }
+.fact-box { border: 1px solid #e0ddd6; padding: 12px 14px; font-size: 0.8rem; }
+.fact-box .fact-agent { font-family: monospace; font-size: 0.6rem; color: #777; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+.fact-box .fact-role { font-weight: bold; margin-bottom: 4px; }
+.fact-box .fact-detail { color: #3a3a3a; font-size: 0.78rem; }
+.warn-box { border: 1px solid; padding: 14px 16px; margin: 16px 0; font-size: 0.84rem; }
+.decision-phase { font-family: monospace; font-size: 0.62rem; letter-spacing: 0.1em; color: #777; text-transform: uppercase; margin-bottom: 6px; }
+.decision-clock { font-size: 2rem; font-weight: normal; letter-spacing: -0.02em; margin-bottom: 4px; }
+.decision-title { font-size: 1.3rem; font-weight: normal; margin-bottom: 16px; }
+.decision-context { font-size: 0.88rem; color: #3a3a3a; margin-bottom: 8px; padding: 16px; border-left: 3px solid; line-height: 1.65; }
+.audience-frame { font-size: 0.82rem; margin-bottom: 24px; padding: 12px 14px; border: 1px solid; border-radius: 2px; font-style: italic; }
+.decision-question { font-size: 1rem; margin-bottom: 20px; padding-top: 8px; border-top: 1px solid #e0ddd6; }
+.options { display: flex; flex-direction: column; gap: 10px; }
+.opt-btn { background: white; border: 1.5px solid #e0ddd6; padding: 16px 18px; text-align: left; cursor: pointer; transition: all 0.15s; font-family: 'Georgia', serif; }
+.opt-btn:hover { border-color: #0d0d0d; background: #faf9f6; }
+.opt-btn.selected { border-color: #0d0d0d; background: #0d0d0d; color: white; }
+.opt-label { font-family: monospace; font-size: 0.62rem; letter-spacing: 0.08em; color: #777; margin-bottom: 4px; }
+.opt-btn.selected .opt-label { color: #aaa; }
+.opt-title { font-size: 0.9rem; font-weight: bold; margin-bottom: 3px; }
+.opt-detail { font-size: 0.78rem; color: #3a3a3a; }
+.opt-btn.selected .opt-detail { color: #ccc; }
+.consequence-header { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #e0ddd6; }
+.chosen-badge { background: #0d0d0d; color: white; font-family: monospace; font-size: 0.6rem; padding: 4px 8px; letter-spacing: 0.06em; white-space: nowrap; margin-top: 4px; }
+.chosen-text { font-size: 0.88rem; font-style: italic; color: #3a3a3a; }
+.consequence-body { font-size: 0.88rem; line-height: 1.75; color: #3a3a3a; }
+.consequence-body p { margin-bottom: 14px; }
+.consequence-section { font-family: monospace; font-size: 0.6rem; letter-spacing: 0.1em; color: #777; text-transform: uppercase; margin-bottom: 6px; margin-top: 20px; }
+.consequence-loading { display: flex; align-items: center; gap: 10px; color: #777; font-family: monospace; font-size: 0.78rem; padding: 24px 0; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner { display: inline-block; animation: spin 0.8s linear infinite; font-size: 1rem; }
+.scorecard-title { font-size: 1.6rem; font-weight: normal; margin-bottom: 4px; letter-spacing: -0.02em; }
+.profile-badge { display: inline-block; padding: 6px 14px; border: 1.5px solid #0d0d0d; font-family: monospace; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; margin: 14px 0 24px; }
+.score-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 28px; }
+.score-card { border: 1px solid #e0ddd6; padding: 14px 16px; }
+.score-dimension { font-family: monospace; font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: #777; margin-bottom: 6px; }
+.score-bar-wrap { background: #e0ddd6; height: 6px; margin-bottom: 6px; }
+.score-bar { height: 6px; transition: width 1s ease; }
+.score-bar.low { background: #b91c1c; }
+.score-bar.mid { background: #d97706; }
+.score-bar.high { background: #166534; }
+.score-num { font-size: 1.4rem; font-weight: normal; }
+.decision-log { margin-bottom: 24px; }
+.log-entry { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid #e0ddd6; font-size: 0.82rem; }
+.log-phase { font-family: monospace; font-size: 0.62rem; color: #777; min-width: 80px; padding-top: 2px; }
+.log-choice { flex: 1; }
+.log-choice strong { display: block; margin-bottom: 2px; }
+.log-choice span { color: #777; font-size: 0.76rem; }
+.insight-box { background: #faf9f6; border: 1px solid #e0ddd6; padding: 20px; margin-bottom: 20px; font-size: 0.85rem; line-height: 1.7; }
+.insight-box h4 { font-size: 0.7rem; font-family: monospace; letter-spacing: 0.08em; text-transform: uppercase; color: #777; margin-bottom: 10px; }
+.nav-row { display: flex; justify-content: space-between; align-items: center; margin-top: 32px; padding-top: 20px; border-top: 1px solid #e0ddd6; }
+.btn-primary { color: white; border: none; padding: 12px 28px; font-family: 'Georgia', serif; font-size: 0.88rem; cursor: pointer; letter-spacing: 0.02em; transition: background 0.15s; }
+.btn-ghost { background: none; color: #777; border: 1px solid #e0ddd6; padding: 12px 20px; font-family: 'Georgia', serif; font-size: 0.82rem; cursor: pointer; }
+.btn-ghost:hover { border-color: #0d0d0d; color: #0d0d0d; }
+.export-btn { background: none; border: 1px solid #e0ddd6; color: #777; padding: 8px 16px; font-family: monospace; font-size: 0.65rem; letter-spacing: 0.06em; cursor: pointer; text-transform: uppercase; }
+.export-btn:hover { border-color: #0d0d0d; color: #0d0d0d; }
+.phase-hidden { display: none; }
+@media print { .audience-bar, .progress-bar, .nav-row, .export-btn, .incident-banner { display: none; } }
+
+:root {
+  --accent: #14532d;
+  --accent-bg: #f0fdf4;
+  --accent-light: #86efac;
+  --context-bg: #fffbeb;
+  --context-border: #fcd34d;
+}
+.incident-banner { background: var(--accent); }
+.briefing-eyebrow { color: var(--accent); }
+.aud-btn.active { color: white; border-bottom-color: var(--accent); }
+.role-card { background: var(--accent-bg); border-left: 3px solid var(--accent); }
+.role-card strong { color: var(--accent); }
+.memo-header { background: var(--accent); }
+.warn-box { background: var(--context-bg); border-color: var(--context-border); }
+.warn-box strong { color: var(--accent); }
+.decision-clock { color: var(--accent); }
+.btn-primary { background: var(--accent); }
+.btn-primary:hover { opacity: 0.85; }
+</style>
+</head>
+<body>
+<div class="incident-banner">
+  <div class="incident-status"><div class="pulse"></div><span>ACTIVE INCIDENT — STATE DEPARTMENT OF PUBLIC HEALTH</span></div>
+  <div class="incident-time" id="live-time"></div>
+</div>
+<div class="audience-bar">
+  <div class="audience-label">Your role:</div>
+  <button class="aud-btn" data-aud="commissioner" onclick="setAudience('commissioner')">State Health Officer / Commissioner</button>
+<button class="aud-btn" data-aud="deputy" onclick="setAudience('deputy')">Deputy Commissioner</button>
+<button class="aud-btn" data-aud="legislator" onclick="setAudience('legislator')">State Legislator / Policy Maker</button>
+<button class="aud-btn" data-aud="community" onclick="setAudience('community')">Community Health Organization Leader</button>
+</div>
+<div class="progress-bar"><div class="prog-step"><div class="prog-dot" id="pd0"></div><span>Briefing</span></div>
+<div class="prog-line" id="pl0"></div>
+<div class="prog-step"><div class="prog-dot" id="pd1"></div><span>Decision 1</span></div>
+<div class="prog-line" id="pl1"></div>
+<div class="prog-step"><div class="prog-dot" id="pd2"></div><span>Decision 2</span></div>
+<div class="prog-line" id="pl2"></div>
+<div class="prog-step"><div class="prog-dot" id="pd3"></div><span>Decision 3</span></div>
+<div class="prog-line" id="pl3"></div>
+<div class="prog-step"><div class="prog-dot" id="pd4"></div><span>Scorecard</span></div></div>
+<div class="main">
+
+<div id="phase-0">
+  <div class="briefing-eyebrow">Incident Briefing — Confidential</div>
+  <div class="briefing-title">The Public Health Cascade</div>
+  <div class="briefing-sub">Day 1, 11:45 AM · State Department of Public Health · Executive Simulation</div>
+  <div class="role-card" id="role-card">
+    <strong>Your Role</strong>
+    <span id="role-text"></span>
+  </div>
+  <div class="memo">
+    <div class="memo-header">Incident Summary</div>
+    <div class="memo-body">
+      <div class="memo-row"><div class="memo-key">Agency</div><div class="memo-val">State Department of Public Health. You oversee communicable disease response for a state of 4.2 million people.</div></div>
+      <div class="memo-row"><div class="memo-key">AI System</div><div class="memo-val">ContaTrace-AI. Deployed 14 months ago for contact tracing prioritization and outbreak resource allocation. Analyzes case data, compliance history, and demographic indicators to direct field team resources.</div></div>
+      <div class="memo-row"><div class="memo-key">The Flaw</div><div class="memo-val">ContaTrace-AI deprioritized follow-up in three ZIP codes based on "historical compliance rates." Those rates were low — but the cause was language barriers and documented fear of immigration enforcement, not genuine non-compliance. The system learned the outcome, not the cause.</div></div>
+      <hr class="memo-divider">
+      <div class="memo-section">What Happened</div>
+      <div class="fact-grid">
+        <div class="fact-box">
+          <div class="fact-agent">ZIP Codes 07801, 07802, 07803</div>
+          <div class="fact-role">Majority Immigrant Communities</div>
+          <div class="fact-detail">Three adjacent ZIP codes with large Central American immigrant populations. Prior outbreak response data showed low compliance — driven by language barriers and fear, not refusal.</div>
+        </div>
+        <div class="fact-box">
+          <div class="fact-agent">ContaTrace-AI Output</div>
+          <div class="fact-role">Resource Allocation Decision</div>
+          <div class="fact-detail">System deprioritized these ZIP codes for follow-up, directing field teams elsewhere. Your Deputy Commissioner used this output to make documented resource allocation decisions.</div>
+        </div>
+        <div class="fact-box">
+          <div class="fact-agent">The Gap</div>
+          <div class="fact-role">11 Days Without Escalation</div>
+          <div class="fact-detail">A respiratory illness cluster in ZIP 07801 was not flagged for 11 days. During that window: 14 hospitalizations, 2 deaths, 87 additional cases identified retroactively.</div>
+        </div>
+        <div class="fact-box">
+          <div class="fact-agent">Salud Para Todos</div>
+          <div class="fact-role">Community Health Organization</div>
+          <div class="fact-detail">A community health organization has gone public with the story. A state legislator is calling for an investigation. Local media has the story for tonight's broadcast.</div>
+        </div>
+      </div>
+      <hr class="memo-divider">
+      <div class="memo-section">What You Know and Must Reckon With</div>
+      <div class="warn-box">
+        <strong>ContaTrace-AI encoded historical inequity and acted on it.</strong> The system did not know why compliance rates were low. It only knew that they were. It treated a structural barrier as a behavioral pattern — and your organization deployed it without asking whether the training data reflected reality or reflected the consequences of prior underservice. Two people died during the gap. Fourteen families have a family member who was hospitalized. The communities most harmed are the ones who have the least historical reason to trust the public health system.
+      </div>
+      <div class="memo-section">You Have Three Decisions to Make</div>
+      <div class="memo-para">A community forum has been requested. A legislative hearing is coming. Your deputy commissioner is in your office. Each decision will define how your agency, and the field, responds to algorithmic harm in public health — and whether the communities affected have any reason to trust you going forward.</div>
+    </div>
+  </div>
+  <div class="nav-row">
+    <div style="font-size:0.78rem;color:#777;font-family:monospace;">Read carefully. You cannot return to the briefing once you begin.</div>
+    <button class="btn-primary" onclick="goToPhase(1)">Begin Simulation →</button>
+  </div>
+</div>
+
+
+<div id="phase-1" class="phase-hidden">
+  <div class="decision-phase">Decision 1 of 3</div>
+  <div class="decision-clock" style="color:var(--accent)">Day 1 — 11:45 AM</div>
+  <div class="decision-title">The Deputy Commissioner</div>
+  <div class="decision-context" style="background:var(--context-bg);border-color:var(--context-border)">Your Deputy Commissioner is in your office. She is the person whose resource allocation decisions, based on ContaTrace-AI output, are now in the legislative record. She did not question the system's output — it was presented to her as the optimized allocation recommendation. She followed it. She is not certain whether that was the right decision given the data she had. You have a press briefing at 1pm and a community organization calling for a public forum. You need to decide your posture toward her — and toward the system — before noon.</div>
+  <div class="audience-frame" style="color:var(--accent);border-color:var(--accent-light);background:var(--accent-bg)" id="d1-frame">As State Health Officer: Your deputy followed the system. You deployed the system without ensuring field teams could question it. The accountability here is layered. How you treat her — publicly and privately — defines your organization's relationship with internal decision-making for years.</div>
+  <div class="decision-question">What do you do with your Deputy Commissioner — and how do you characterize the system's role publicly?</div>
+  <div class="options" id="d1-options">
+    <button class="opt-btn" onclick="selectOption(1,'A')">
+      <div class="opt-label">Option A</div>
+      <div class="opt-title">Support the deputy publicly. "She followed the data. The system failed, not her."</div>
+      <div class="opt-detail">Go to the press briefing and characterize this as a system failure. Your deputy made reasonable decisions based on the output she was given. She is not the story.</div>
+    </button>
+    <button class="opt-btn" onclick="selectOption(1,'B')">
+      <div class="opt-label">Option B</div>
+      <div class="opt-title">Ask the deputy to step back from public-facing roles during the investigation.</div>
+      <div class="opt-detail">She made the documented decisions. Her continued public presence creates a distraction. Step her back temporarily — not as punishment but as process. Continue to support her internally.</div>
+    </button>
+    <button class="opt-btn" onclick="selectOption(1,'C')">
+      <div class="opt-label">Option C</div>
+      <div class="opt-title">Present a united front publicly while separating her from the investigation internally.</div>
+      <div class="opt-detail">Public solidarity, private separation. She stays in her role but is not part of the investigation team or the community engagement process. Manage the optics without creating a scapegoat.</div>
+    </button>
+    <button class="opt-btn" onclick="selectOption(1,'D')">
+      <div class="opt-label">Option D</div>
+      <div class="opt-title">Tell her the truth as you see it — and ask her to help you tell it publicly.</div>
+      <div class="opt-detail">Name what happened: the system encoded a flawed assumption, she acted on it without the tools to question it, and both things are true simultaneously. Ask her to stand with you at the press briefing and say so together.</div>
+    </button>
+  </div>
+  <div class="nav-row">
+    <button class="btn-ghost" onclick="goToPhase(0)">← Back</button>
+    <button class="btn-primary" style="background:var(--accent)" id="d1-next" disabled onclick="goToConsequence(1)">See Consequences →</button>
+  </div>
+</div>
+<div id="phase-1b" class="phase-hidden">
+  <div class="decision-phase">Consequence — Decision 1</div>
+  <div class="decision-title">What Happened Next</div>
+  <div class="consequence-header">
+    <div><div class="chosen-badge">YOU CHOSE</div></div>
+    <div class="chosen-text" id="c1-chosen"></div>
+  </div>
+  <div id="c1-loading" class="consequence-loading"><span class="spinner">⟳</span> Generating consequences...</div>
+  <div id="c1-body" class="consequence-body" style="display:none"></div>
+  <div class="nav-row">
+    <div></div>
+    <button class="btn-primary" style="background:var(--accent)" onclick="goToPhase(2)">Decision 2 →</button>
+  </div>
+</div>
+<div id="phase-2" class="phase-hidden">
+  <div class="decision-phase">Decision 2 of 3</div>
+  <div class="decision-clock" style="color:var(--accent)">Day 5 — 6:00 PM</div>
+  <div class="decision-title">The Community Forum</div>
+  <div class="decision-context" style="background:var(--context-bg);border-color:var(--context-border)">Salud Para Todos has organized a community forum in ZIP 07801 — the community most directly affected. The organizer has told you that the community wants to know why they were deprioritized. You know the answer involves an AI system, historical compliance data, and proxy variables that reflected prior underservice rather than genuine non-compliance. You know two people died during the gap. Your legal team has advised against attending — anything you say could be used in litigation. Your communications team has prepared a statement a deputy could read on your behalf.</div>
+  <div class="audience-frame" style="color:var(--accent);border-color:var(--accent-light);background:var(--accent-bg)" id="d2-frame">As State Health Officer: You can send a deputy. The legal team prefers it. The community organized this forum for you. What does your presence — or absence — communicate to 200 people who lost neighbors during an 11-day gap your system created?</div>
+  <div class="decision-question">Do you go to the community forum — and what do you say when you get there?</div>
+  <div class="options" id="d2-options">
+    <button class="opt-btn" onclick="selectOption(2,'A')">
+      <div class="opt-label">Option A</div>
+      <div class="opt-title">Send a deputy with a prepared statement. You do not attend.</div>
+      <div class="opt-detail">The investigation is active. Your presence could be legally construed as an admission. The deputy delivers the statement, answers process questions, and commits to follow-up. You watch the recording.</div>
+    </button>
+    <button class="opt-btn" onclick="selectOption(2,'B')">
+      <div class="opt-label">Option B</div>
+      <div class="opt-title">Go. Speak only about what you are doing going forward, not what happened.</div>
+      <div class="opt-detail">You attend. You acknowledge the harm without explaining the cause. You present your corrective action plan. You do not use the word "algorithm" or explain the system's role until the investigation is complete.</div>
+    </button>
+    <button class="opt-btn" onclick="selectOption(2,'C')">
+      <div class="opt-label">Option C</div>
+      <div class="opt-title">Go. Tell them the truth as completely as you currently understand it.</div>
+      <div class="opt-detail">You attend. You explain, in plain language, what ContaTrace-AI was designed to do, what it did, why the historical compliance data was a flawed proxy, and what you are changing. Legal consequences are secondary to what these families deserve to know.</div>
+    </button>
+    <button class="opt-btn" onclick="selectOption(2,'D')">
+      <div class="opt-label">Option D</div>
+      <div class="opt-title">Go. Open by asking the community what they need before you say anything.</div>
+      <div class="opt-detail">You attend. You do not lead with a statement. You open by sitting down with community leaders and asking what accountability looks like to them before you define it for yourself.</div>
+    </button>
+  </div>
+  <div class="nav-row">
+    <button class="btn-ghost" onclick="goToPhase(1)">← Back</button>
+    <button class="btn-primary" style="background:var(--accent)" id="d2-next" disabled onclick="goToConsequence(2)">See Consequences →</button>
+  </div>
+</div>
+<div id="phase-2b" class="phase-hidden">
+  <div class="decision-phase">Consequence — Decision 2</div>
+  <div class="decision-title">What Happened Next</div>
+  <div class="consequence-header">
+    <div><div class="chosen-badge">YOU CHOSE</div></div>
+    <div class="chosen-text" id="c2-chosen"></div>
+  </div>
+  <div id="c2-loading" class="consequence-loading"><span class="spinner">⟳</span> Generating consequences...</div>
+  <div id="c2-body" class="consequence-body" style="display:none"></div>
+  <div class="nav-row">
+    <div></div>
+    <button class="btn-primary" style="background:var(--accent)" onclick="goToPhase(3)">Decision 3 →</button>
+  </div>
+</div>
+<div id="phase-3" class="phase-hidden">
+  <div class="decision-phase">Decision 3 of 3</div>
+  <div class="decision-clock" style="color:var(--accent)">Day 21 — 10:00 AM</div>
+  <div class="decision-title">The Legislative Hearing</div>
+  <div class="decision-context" style="background:var(--context-bg);border-color:var(--context-border)">You are testifying before the legislative committee. The chair has been direct in pre-hearing communication: the committee wants a clear answer. She opens your testimony with this question, on the record: "Commissioner, did the algorithm discriminate against the communities in ZIP codes 07801, 07802, and 07803?"</div>
+  <div class="audience-frame" style="color:var(--accent);border-color:var(--accent-light);background:var(--accent-bg)" id="d3-frame">As State Health Officer: This is the question your entire investigation has been building toward. There is a legal answer, a technical answer, a political answer, and a truthful answer. They are not the same answer. You have 30 seconds before the silence becomes its own statement.</div>
+  <div class="decision-question">What is your answer — on the record, in a public hearing?</div>
+  <div class="options" id="d3-options">
+    <button class="opt-btn" onclick="selectOption(3,'A')">
+      <div class="opt-label">Option A</div>
+      <div class="opt-title">"No — the algorithm followed its design parameters. The issue was in the data it was trained on."</div>
+      <div class="opt-detail">Technically accurate. The algorithm did not discriminate — it optimized based on flawed training data. The discrimination, if any, was in how the training data was assembled and what questions were asked.</div>
+    </button>
+    <button class="opt-btn" onclick="selectOption(3,'B')">
+      <div class="opt-label">Option B</div>
+      <div class="opt-title">"Yes — and I take full responsibility for deploying a system that produced discriminatory outcomes."</div>
+      <div class="opt-detail">Name it directly. The outcome was discriminatory — people in these communities received less timely public health response than others because of their demographic characteristics, regardless of the mechanism.</div>
+    </button>
+    <button class="opt-btn" onclick="selectOption(3,'C')">
+      <div class="opt-label">Option C</div>
+      <div class="opt-title">"That is a legal determination I cannot make. The investigation will speak to that."</div>
+      <div class="opt-detail">Defer to the investigation. "Discriminate" has legal meaning. You are not in a position to make legal determinations from the witness table. Answer process questions, not legal conclusions.</div>
+    </button>
+    <button class="opt-btn" onclick="selectOption(3,'D')">
+      <div class="opt-label">Option D</div>
+      <div class="opt-title">"The outcome was discriminatory. Whether the algorithm itself discriminated is a separate question — and both questions matter."</div>
+      <div class="opt-detail">Distinguish between the outcome (discriminatory — documented and undeniable) and the mechanism (algorithmic — technically complex and legally contested). Give the committee both answers and explain why they are different.</div>
+    </button>
+  </div>
+  <div class="nav-row">
+    <button class="btn-ghost" onclick="goToPhase(2)">← Back</button>
+    <button class="btn-primary" style="background:var(--accent)" id="d3-next" disabled onclick="goToConsequence(3)">See Consequences →</button>
+  </div>
+</div>
+<div id="phase-3b" class="phase-hidden">
+  <div class="decision-phase">Consequence — Decision 3</div>
+  <div class="decision-title">What Happened Next</div>
+  <div class="consequence-header">
+    <div><div class="chosen-badge">YOU CHOSE</div></div>
+    <div class="chosen-text" id="c3-chosen"></div>
+  </div>
+  <div id="c3-loading" class="consequence-loading"><span class="spinner">⟳</span> Generating consequences...</div>
+  <div id="c3-body" class="consequence-body" style="display:none"></div>
+  <div class="nav-row">
+    <div></div>
+    <button class="btn-primary" style="background:var(--accent)" onclick="goToScorecard()">View Governance Scorecard →</button>
+  </div>
+</div>
+
+<div id="phase-4" class="phase-hidden">
+  <div class="briefing-eyebrow">Governance Scorecard</div>
+  <div class="scorecard-title">Your Leadership Profile</div>
+  <div class="profile-badge" id="profile-badge">—</div>
+  <div id="profile-desc" style="font-size:0.88rem;margin-bottom:24px;color:#3a3a3a;line-height:1.65;"></div>
+  <div class="score-grid" id="score-grid"></div>
+  <div class="decision-log" id="decision-log">
+    <div style="font-family:monospace;font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;color:#777;margin-bottom:12px;">Your Decision Log</div>
+  </div>
+  <div style="margin-bottom:16px;">
+    <button class="export-btn" id="export-btn" onclick="exportLog()">Copy Decision Log</button>
+    <span style="font-family:monospace;font-size:0.62rem;color:#aaa;margin-left:12px;">Paste into your assignment reflection</span>
+  </div>
+  <div class="insight-box">
+    <h4>The Governance Insight</h4>
+    <div id="insight-text"></div>
+  </div>
+  <div class="nav-row">
+    <button class="btn-ghost" onclick="restart()">↺ Run Again with Different Choices</button>
+    <div style="font-size:0.75rem;color:#777;font-family:monospace;">© 2026 Dr. Dipu Patel · ReasonFirst</div>
+  </div>
+</div>
+
+</div>
+<script>
+const AUDIENCES = {
+  'commissioner': { label: 'State Health Officer / Commissioner', role: "You are the State Health Officer. You oversee ContaTrace-AI's deployment. Your Deputy Commissioner made the documented resource allocation decisions. You are responsible for both the system and the people who used it.", d1: "As State Health Officer: Your deputy is in your office. She followed the system's output. She did not question it. That is also your failure — you deployed a system without asking whether field teams were equipped or empowered to override it.", d2: "As State Health Officer: The community forum request is a test of your personal commitment to the communities that were harmed. Sending a deputy is not the same as showing up. How you answer this question will define the agency's relationship with these communities for a generation.", d3: 'As State Health Officer: A legislator is asking a yes-or-no question. There is no yes-or-no answer. How you handle that gap — between what the legislator wants and what honesty requires — is your most important governance act of the year.' },
+  'deputy': { label: 'Deputy Commissioner', role: "You are the Deputy Commissioner who made the documented resource allocation decisions based on ContaTrace-AI output. Your decisions are in the legislative record. You believed you were following the system's guidance. You are now in your commissioner's office.", d1: "As Deputy Commissioner: The commissioner is deciding how to characterize your role. You need to be honest about what you knew and when — and about whether you had the tools and authority to question the system's output if you had wanted to.", d2: 'As Deputy Commissioner: You have been asked not to attend the community forum. You made the decisions. You believe you should go. The commissioner disagrees. This is about more than the forum.', d3: "As Deputy Commissioner: The legislative hearing will ask you directly what you knew about the system's training data and its potential limitations. You did not know. That is also an answer — and it points to a governance failure above your pay grade." },
+  'legislator': { label: 'State Legislator / Policy Maker', role: 'You are the state legislator who has called for an investigation. You represent three districts that include the affected ZIP codes. You have been contacted by Salud Para Todos and by two families of patients who were hospitalized during the gap.', d1: 'As Legislator: You have the power to call hearings and propose legislation. How you use the next 72 hours — before the commissioner has fully responded — will shape whether this incident produces lasting policy change or a news cycle.', d2: 'As Legislator: You have been invited to the community forum. You did not cause this. But the families in those communities are your constituents. Whether you go, and what you say when you get there, is a test of what your representation means.', d3: 'As Legislator: You are asking the yes-or-no question because your constituents want a yes-or-no answer. You also know that a yes-or-no answer about algorithmic discrimination is not honest. How do you reconcile those two obligations in a public hearing?' },
+  'community': { label: 'Community Health Organization Leader', role: 'You are the Executive Director of Salud Para Todos, the community health organization that went public with this story. You have been invited to the community forum and to the legislative hearing. You represent the families of the two people who died.', d1: "As Community Leader: The commissioner is deciding whether to publicly support the deputy or distance from her. Before the community forum, you have the opportunity to communicate to the commissioner's office what the community actually needs to hear. What do you say?", d2: 'As Community Leader: You organized this forum. You set the terms. You told the commissioner the community wants to know why they were deprioritized. Now the commissioner is standing in front of you. What does accountability actually look like from where you are standing?', d3: 'As Community Leader: The legislator is asking whether the algorithm discriminated. You believe the answer is yes. But you also know that a legislative finding of discrimination without systemic change produces nothing. What do you ask for beyond the answer?' },
+};
+
+const SCORE_MAP = {
+  1: {
+    'A': { accountability: 0, transparency: 1, strategy: 1, trust: 0 },
+    'B': { accountability: -1, transparency: -1, strategy: 0, trust: -1 },
+    'C': { accountability: -1, transparency: -1, strategy: 1, trust: -1 },
+    'D': { accountability: 2, transparency: 2, strategy: 1, trust: 2 },
+  },
+  2: {
+    'A': { accountability: -2, transparency: -2, strategy: 0, trust: -3 },
+    'B': { accountability: 0, transparency: 0, strategy: 1, trust: -1 },
+    'C': { accountability: 2, transparency: 2, strategy: 0, trust: 2 },
+    'D': { accountability: 2, transparency: 2, strategy: 1, trust: 3 },
+  },
+  3: {
+    'A': { accountability: -1, transparency: 0, strategy: 0, trust: -1 },
+    'B': { accountability: 2, transparency: 1, strategy: -1, trust: 1 },
+    'C': { accountability: -1, transparency: -1, strategy: 1, trust: -1 },
+    'D': { accountability: 2, transparency: 2, strategy: 2, trust: 2 },
+  },
+};
+
+const OPTION_LABELS = {
+  1: {
+    'A': 'Support the deputy publicly. "She followed the data. The system failed, not her."',
+    'B': 'Ask the deputy to step back from public-facing roles during the investigation.',
+    'C': 'Present a united front publicly while separating her from the investigation internally.',
+    'D': 'Tell her the truth as you see it — and ask her to help you tell it publicly.',
+  },
+  2: {
+    'A': 'Send a deputy with a prepared statement. You do not attend.',
+    'B': 'Go. Speak only about what you are doing going forward, not what happened.',
+    'C': 'Go. Tell them the truth as completely as you currently understand it.',
+    'D': 'Go. Open by asking the community what they need before you say anything.',
+  },
+  3: {
+    'A': '"No — the algorithm followed its design parameters. The issue was in the data it was trained on."',
+    'B': '"Yes — and I take full responsibility for deploying a system that produced discriminatory outcomes."',
+    'C': '"That is a legal determination I cannot make. The investigation will speak to that."',
+    'D': '"The outcome was discriminatory. Whether the algorithm itself discriminated is a separate question — and both questions matter."',
+  },
+};
+
+const PHASE_LABELS = {
+  1: 'Day 1 — Deputy',
+  2: 'Day 5 — Forum',
+  3: 'Day 21 — Hearing',
+};
+
+const FALLBACKS = {
+  '1A': 'IMMEDIATE: The press briefing went smoothly. The deputy remained in her role. By evening, Salud Para Todos released a statement saying the agency was "deflecting accountability onto a computer system while the people who made the decisions face no consequences."\n\n30 DAYS OUT: The "system failure, not her" framing held in the media but collapsed at the legislative hearing when the deputy\'s documented emails showed she had been given the AI output and had not questioned it. The separation between system and human accountability proved impossible to maintain.\n\nGOVERNANCE SIGNAL: This choice attempts to protect a subordinate by externalizing accountability onto the technology. A governance expert would note that it misunderstands what accountability means in a cascading AI failure — both the system and the decisions made using its output require separate, honest accounting.',
+  '1B': 'IMMEDIATE: The deputy was stepped back. She understood the reasoning but not without hurt. A community organization leader called it "the agency protecting itself by hiding the people who made the decisions."\n\n30 DAYS OUT: The deputy\'s separation from public-facing roles read as a quiet demotion. When she testified at the legislative hearing, her testimony was guarded in ways that damaged the agency\'s credibility on the timeline of decisions.\n\nGOVERNANCE SIGNAL: Stepping someone back "as process" without being honest that it is also protective is a form of institutional self-deception. A governance expert would say the agency\'s credibility depends on whether the deputy\'s step-back was a genuine governance act or a liability management one — and that the community will correctly guess which.',
+  '1C': "IMMEDIATE: The united front held for 48 hours. A journalist obtained the deputy's internal emails. The gap between public solidarity and private separation became the story.\n\n30 DAYS OUT: The leaked emails were worse than the original event in terms of institutional trust. The community organizations cited the gap as evidence that the agency had been managing appearances rather than managing accountability.\n\nGOVERNANCE SIGNAL: This choice attempts to perform accountability while practicing protection. A governance expert would say it is the most common response to institutional AI failure and the least durable — because the performance cannot be sustained once internal documents become external evidence.",
+  '1D': 'IMMEDIATE: The joint press briefing was unusual and noticed. The deputy\'s composure under questions was genuine. Two journalists described it as "the most honest public health press conference they had seen in years."\n\n30 DAYS OUT: The shared accountability posture set the tone for the entire investigation. When the legislative hearing came, both the commissioner and the deputy testified with consistent, honest accounts of what happened and who knew what. The committee\'s findings reflected a systemic failure rather than individual misconduct.\n\nGOVERNANCE SIGNAL: This choice requires the most institutional courage and produces the most durable outcome. A governance expert would call it rare and correct — and note that it only works if both leaders are genuinely committed to the same honest account, because any gap between their stories would be catastrophic.',
+  '2A': 'IMMEDIATE: The deputy delivered the statement to 200 people who had come to hear from the commissioner. Three community members walked out before she finished. The organizer of Salud Para Todos told the remaining crowd: "The person who needs to answer for this is watching a recording."\n\n30 DAYS OUT: The commissioner\'s absence became a central exhibit in the legislative hearing. The community forum footage, specifically the walkouts and the organizer\'s statement, was played in the hearing room.\n\nGOVERNANCE SIGNAL: Sending a proxy to a community that has been harmed and has asked specifically for you is a governance decision — it communicates that the agency\'s legal exposure matters more than the community\'s need for direct accountability. A governance expert would say it is legally defensible and humanly indefensible, and that in public health, the two cannot be fully separated.',
+  '2B': 'IMMEDIATE: The commissioner showed up. The room was tense. Speaking only about the future without explaining the past left community members frustrated. One family member stood up and said: "You are telling me what you are going to do. I want to know why my father waited 11 days."\n\n30 DAYS OUT: The forward-looking posture was seen as incomplete. The community forum produced a second public statement from Salud Para Todos saying the agency had come but had not answered the question.\n\nGOVERNANCE SIGNAL: Attending without full disclosure is better than not attending — and less than what was needed. A governance expert would say this choice prioritizes institutional protection over genuine encounter, and that the community could tell the difference.',
+  '2C': 'IMMEDIATE: The commissioner showed up and told the truth. It was uncomfortable for everyone in the room. Three families asked questions the commissioner could not fully answer. The commissioner said so.\n\n30 DAYS OUT: Salud Para Todos issued a statement that was not a commendation but acknowledged that the commissioner had come and had told the truth as they understood it. The statement became the starting point for a genuine working relationship between the agency and the community organizations.\n\nGOVERNANCE SIGNAL: Full disclosure in a community setting carries legal risk and builds relational trust simultaneously. A governance expert would call this the most honest available option — and note that honesty in public health is not just an ethical position, it is also the foundation of the community trust that makes outbreak response possible.',
+  '2D': "IMMEDIATE: The commissioner sat down with community leaders before the open session and asked what accountability looked like to them. The answers were specific: a named contact, a timeline, a community advisory role in the investigation, and an honest answer about why their ZIP codes were deprioritized.\n\n30 DAYS OUT: The four things the community asked for became the structure of the agency's corrective action plan. The community advisory role produced recommendations that the internal team had not generated. The relationship was not repaired — but it was begun.\n\nGOVERNANCE SIGNAL: This choice treats the community as experts in their own experience rather than recipients of an official explanation. A governance expert would call it the most sophisticated public health accountability posture — it acknowledges that the agency does not know what accountability looks like from the inside of the harm.",
+  '3A': 'IMMEDIATE: The technical answer satisfied the committee chair\'s staff and dissatisfied everyone else in the room. A family member in the gallery said audibly: "So nobody discriminated. My mother just died."\n\n30 DAYS OUT: The "training data" framing was accurate and inadequate. It became the line most cited by critics of the agency\'s response — because it was true and it felt like evasion.\n\nGOVERNANCE SIGNAL: Technical accuracy in response to a human harm question can be its own form of dishonesty. A governance expert would say that public health leadership requires the ability to hold technical precision and human accountability simultaneously — and that choosing one at the expense of the other is a governance failure even when the technical answer is correct.',
+  '3B': "IMMEDIATE: The direct acknowledgment landed differently in different parts of the room. The community families in the gallery were visibly moved. The committee's legal counsel leaned forward. The commissioner's general counsel closed his eyes.\n\n30 DAYS OUT: The admission of discriminatory outcomes was cited in two subsequent lawsuits as well as in a federal civil rights complaint filed by Salud Para Todos. It was also cited in a national public health policy brief as the most direct acknowledgment of algorithmic harm by a public health official to date.\n\nGOVERNANCE SIGNAL: This choice accepts legal exposure in exchange for moral clarity. A governance expert would say it is the honest answer and that its legal consequences, while real, are typically less damaging than the alternative — because denial of clear outcomes destroys institutional credibility in ways that acknowledgment does not.",
+  '3C': 'IMMEDIATE: The committee chair looked at the commissioner for three seconds before writing something on her notepad. She then said: "We will be issuing a subpoena for the investigation materials by end of week."\n\n30 DAYS OUT: The deferral to the investigation was interpreted as stonewalling. The subpoena moved the investigation outside the agency\'s control. The findings, when they came, were presented by the committee rather than by the agency.\n\nGOVERNANCE SIGNAL: Deferring legal determinations to an investigation is procedurally correct. It is also, in a public hearing about documented community harm, experienced as the agency prioritizing its legal position over the committee\'s legitimate oversight role. A governance expert would say the commissioner answered the wrong question — the committee was asking about outcomes, not legal conclusions.',
+  '3D': "IMMEDIATE: The committee chair sat back. She had expected either a yes or a no. Getting both — and a clear explanation of why they were different questions — changed the frame of the hearing. The next 40 minutes were substantive rather than adversarial.\n\n30 DAYS OUT: The distinction between discriminatory outcomes and algorithmic discrimination became the conceptual foundation of the state's subsequent AI governance legislation. The commissioner was cited as a primary source in the legislative findings.\n\nGOVERNANCE SIGNAL: This is the most intellectually honest and politically sophisticated answer available. It requires the courage to give a complex answer to a question designed to produce a simple one — and it requires genuine understanding of what happened. A governance expert would call it the answer that serves both the community and the field.",
+};
+
+const SCENARIO_META = {
+  title: 'The Public Health Cascade',
+  consequencePrompt: function(decision, option, optionLabel, role, priorDecisions) {
+    return "You are a governance educator running an executive leadership simulation about AI in public health. A senior public health leader just made a decision in a crisis scenario.\n\nDECISION {DECISION} - THEY CHOSE: {OPTION_LABEL}\nLEADER ROLE: {ROLE}\nPRIOR DECISIONS: {PRIOR}\n\nGenerate a consequence narrative in three clearly labeled sections:\n\nIMMEDIATE (next 48 hours): What concretely happened. Be specific — name who said what, what community or political or media pressure emerged. 2-3 sentences.\n\n30 DAYS OUT: What downstream institutional, community trust, or policy consequence flowed from this choice. Be honest about both benefits and costs. 2-3 sentences.\n\nGOVERNANCE SIGNAL: What does this choice reveal about this leader's governance instinct in a public health equity context? Name the underlying value or assumption — and what a public health governance expert would say about it. 2-3 sentences. Be analytically honest, not congratulatory or punishing.\n\nWrite in plain prose. No bullet points. No headers beyond the three section labels.".replace('{DECISION}', decision).replace('{OPTION_LABEL}', optionLabel).replace('{ROLE}', role).replace('{PRIOR}', priorDecisions || 'This is their first decision.') + '\n\nScenario background: State Department of Public Health. ContaTrace-AI deprioritized three majority-immigrant ZIP codes based on historical compliance rates that reflected language barriers and fear of immigration enforcement, not genuine non-compliance. 11-day gap in outbreak response. 14 hospitalizations, 2 deaths. Community health organization has gone public. Legislative hearing pending. Deputy Commissioner made documented resource allocation decisions based on AI output.';
+  },
+  insight: "ContaTrace-AI learned from historical data. The historical data reflected a real pattern — low compliance rates in these ZIP codes. What the system could not learn, because it was never taught to ask, was <em>why</em> compliance rates were low. The cause was language barriers and documented fear of immigration enforcement. The system treated the consequence of prior underservice as evidence of future non-compliance, and your organization directed resources away from the communities that most needed them.<br><br>This is the hardest version of the AI governance problem in public health: the system did not fail technically. It did exactly what it was designed to do. The failure was upstream — in what questions were asked when the training data was assembled, in what proxy variables were used, and in whether anyone in the organization asked whether historical public health data was a fair representation of community behavior or a record of the system's prior failures.<br><br><strong>The governance question this simulation cannot answer — but that every public health leader must answer before the next deployment:</strong> when your surveillance and allocation systems are trained on historical data, whose history are they learning from — and who bears the cost when that history was shaped by the system's own prior inequities?"
+};
+
+let audience = Object.keys(AUDIENCES)[0];
+let choices = {};
+let consequences = {};
+let scores = { accountability: 0, transparency: 0, strategy: 0, trust: 0 };
+
+function goToPhase(n) {
+  document.querySelectorAll('[id^="phase-"]').forEach(el => el.classList.add('phase-hidden'));
+  document.getElementById('phase-' + n).classList.remove('phase-hidden');
+  updateProgress(n);
+  window.scrollTo(0, 0);
+}
+
+function updateProgress(phase) {
+  const active = parseInt(phase);
+  for (let i = 0; i <= 4; i++) {
+    const dot = document.getElementById('pd' + i);
+    const line = document.getElementById('pl' + i);
+    if (dot) dot.className = 'prog-dot' + (i < active ? ' done' : i === active ? ' active' : '');
+    if (line) line.className = 'prog-line' + (i < active ? ' done' : '');
+  }
+}
+
+function selectOption(decision, option) {
+  choices[decision] = option;
+  const container = document.getElementById('d' + decision + '-options');
+  container.querySelectorAll('.opt-btn').forEach((btn, i) => {
+    btn.classList.toggle('selected', ['A','B','C','D'][i] === option);
+  });
+  const nextBtn = document.getElementById('d' + decision + '-next');
+  if (nextBtn) nextBtn.disabled = false;
+}
+
+async function goToConsequence(decision) {
+  const phaseId = 'phase-' + decision + 'b';
+  document.querySelectorAll('[id^="phase-"]').forEach(el => el.classList.add('phase-hidden'));
+  document.getElementById(phaseId).classList.remove('phase-hidden');
+  window.scrollTo(0, 0);
+  const impact = SCORE_MAP[decision][choices[decision]];
+  Object.keys(impact).forEach(k => scores[k] += impact[k]);
+  document.getElementById('c' + decision + '-chosen').textContent = OPTION_LABELS[decision][choices[decision]];
+  const loadEl = document.getElementById('c' + decision + '-loading');
+  const bodyEl = document.getElementById('c' + decision + '-body');
+  loadEl.style.display = 'flex';
+  bodyEl.style.display = 'none';
+  const audConfig = AUDIENCES[audience];
+  const priorDecisions = Object.keys(choices).filter(d => parseInt(d) < decision).map(d => 'Decision ' + d + ': ' + OPTION_LABELS[d][choices[d]]).join('; ');
+  const prompt = SCENARIO_META.consequencePrompt(decision, choices[decision], OPTION_LABELS[decision][choices[decision]], audConfig.role, priorDecisions);
+  let text = '';
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 600, messages: [{ role: 'user', content: prompt }] })
+    });
+    const data = await resp.json();
+    text = data.content[0].text;
+  } catch(e) {
+    text = FALLBACKS[decision + choices[decision]];
+  }
+  consequences[decision] = text;
+  loadEl.style.display = 'none';
+  bodyEl.style.display = 'block';
+  bodyEl.innerHTML = formatConsequence(text);
+}
+
+function formatConsequence(text) {
+  const sections = ['IMMEDIATE', '30 DAYS OUT', 'GOVERNANCE SIGNAL'];
+  let html = '';
+  sections.forEach(s => {
+    const idx = text.indexOf(s + ':');
+    if (idx !== -1) {
+      const next = sections.find(s2 => s2 !== s && text.indexOf(s2 + ':') > idx);
+      const end = next ? text.indexOf(next + ':') : text.length;
+      const content = text.slice(idx + s.length + 1, end).trim();
+      html += '<div class="consequence-section">' + s + '</div><p>' + content + '</p>';
+    }
+  });
+  return html || '<p>' + text + '</p>';
+}
+
+function setAudience(aud) {
+  audience = aud;
+  document.querySelectorAll('.aud-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.aud === aud);
+  });
+  const cfg = AUDIENCES[aud];
+  const roleText = document.getElementById('role-text');
+  if (roleText) roleText.textContent = cfg.role;
+  const roleCard = document.getElementById('role-card');
+  if (roleCard) roleCard.querySelector('strong').textContent = 'Your Role — ' + cfg.label;
+  [1,2,3].forEach(d => {
+    const el = document.getElementById('d' + d + '-frame');
+    if (el) el.textContent = cfg['d' + d];
+  });
+}
+
+function goToScorecard() {
+  goToPhase(4);
+  const total = Object.values(scores).reduce((a,b) => a+b, 0);
+  let profile, profileDesc;
+  if (total >= 12) { profile = 'Principled Governor'; profileDesc = 'Your decisions consistently chose accountability and transparency over institutional protection — even when that was costly. A governance expert would describe this as rare under real pressure and the posture most likely to produce durable institutional trust.'; }
+  else if (total >= 6) { profile = 'Strategic Navigator'; profileDesc = 'You balanced institutional protection with transparency, making pragmatic choices under time pressure. A governance expert would note that strategic navigation without a clear ethical north star can drift toward self-protection as pressure increases.'; }
+  else if (total >= 0) { profile = 'Risk Manager'; profileDesc = 'Your decisions prioritized institutional protection and operational continuity. A governance expert would say this posture is common, understandable — and that it tends to produce the long-term outcomes it was designed to prevent.'; }
+  else { profile = 'Crisis Reactor'; profileDesc = 'Your decisions were driven primarily by immediate pressure. A governance expert would note that reactive decision-making in a values vacuum tends to create a second crisis of credibility on top of the first. The most useful question now: what values do you want driving decisions before the next crisis arrives?'; }
+  document.getElementById('profile-badge').textContent = profile;
+  document.getElementById('profile-desc').textContent = profileDesc;
+  const dims = [
+    { key: 'accountability', label: 'Accountability', max: 7 },
+    { key: 'transparency', label: 'Transparency', max: 7 },
+    { key: 'strategy', label: 'Strategic Soundness', max: 5 },
+    { key: 'trust', label: 'Trust Preservation', max: 6 },
+  ];
+  document.getElementById('score-grid').innerHTML = dims.map(d => {
+    const raw = scores[d.key];
+    const pct = Math.max(0, Math.min(100, ((raw + d.max) / (d.max * 2)) * 100));
+    const cls = pct >= 66 ? 'high' : pct >= 33 ? 'mid' : 'low';
+    const label = pct >= 66 ? 'Strong' : pct >= 33 ? 'Mixed' : 'Weak';
+    return '<div class="score-card"><div class="score-dimension">' + d.label + '</div><div class="score-bar-wrap"><div class="score-bar ' + cls + '" style="width:' + pct + '%"></div></div><span class="score-num">' + label + '</span></div>';
+  }).join('');
+  const log = document.getElementById('decision-log');
+  [1,2,3].forEach(d => {
+    if (choices[d]) {
+      const impact = SCORE_MAP[d][choices[d]];
+      const div = document.createElement('div');
+      div.className = 'log-entry';
+      div.innerHTML = '<div class="log-phase">' + PHASE_LABELS[d] + '</div><div class="log-choice"><strong>' + OPTION_LABELS[d][choices[d]] + '</strong><span>Accountability ' + (impact.accountability >= 0 ? '+' : '') + impact.accountability + ' · Transparency ' + (impact.transparency >= 0 ? '+' : '') + impact.transparency + ' · Strategy ' + (impact.strategy >= 0 ? '+' : '') + impact.strategy + ' · Trust ' + (impact.trust >= 0 ? '+' : '') + impact.trust + '</span></div>';
+      log.appendChild(div);
+    }
+  });
+  document.getElementById('insight-text').innerHTML = SCENARIO_META.insight;
+}
+
+function exportLog() {
+  const lines = ['DECISION LOG — ' + SCENARIO_META.title, '========================', 'Audience: ' + AUDIENCES[audience].label, ''];
+  [1,2,3].forEach(d => {
+    if (choices[d]) {
+      const impact = SCORE_MAP[d][choices[d]];
+      lines.push(PHASE_LABELS[d].toUpperCase());
+      lines.push('Choice: ' + OPTION_LABELS[d][choices[d]]);
+      lines.push('Impact: Accountability ' + (impact.accountability >= 0 ? '+' : '') + impact.accountability + ' | Transparency ' + (impact.transparency >= 0 ? '+' : '') + impact.transparency + ' | Strategy ' + (impact.strategy >= 0 ? '+' : '') + impact.strategy + ' | Trust ' + (impact.trust >= 0 ? '+' : '') + impact.trust);
+      lines.push('');
+    }
+  });
+  lines.push('PROFILE: ' + (document.getElementById('profile-badge') ? document.getElementById('profile-badge').textContent : '—'));
+  lines.push('');
+  lines.push('© 2026 Dr. Dipu Patel · ReasonFirst');
+  const text = lines.join('\n');
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('export-btn');
+    if (btn) { btn.textContent = '✓ Copied'; setTimeout(() => btn.textContent = 'Copy Decision Log', 2000); }
+  }).catch(() => {
+    const blob = new Blob([text], { type: 'text/plain' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'decision_log.txt';
+    a.click();
+  });
+}
+
+function restart() {
+  choices = {}; consequences = {};
+  scores = { accountability: 0, transparency: 0, strategy: 0, trust: 0 };
+  document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll('[id$="-next"]').forEach(b => { if(b) b.disabled = true; });
+  [1,2,3].forEach(d => {
+    const bl = document.getElementById('c' + d + '-body');
+    const ll = document.getElementById('c' + d + '-loading');
+    if (bl) bl.style.display = 'none';
+    if (ll) ll.style.display = 'flex';
+  });
+  const dl = document.getElementById('decision-log');
+  if (dl) dl.innerHTML = '<div style="font-family:monospace;font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;color:#777;margin-bottom:12px;">Your Decision Log</div>';
+  goToPhase(0);
+}
+
+function updateClock() {
+  const el = document.getElementById('live-time');
+  if (el) el.textContent = new Date().toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+setInterval(updateClock, 1000);
+updateClock();
+setAudience(Object.keys(AUDIENCES)[0]);
+
+</script>
+</body>
+</html>
